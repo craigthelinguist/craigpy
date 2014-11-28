@@ -4,6 +4,7 @@ import numpy as np
 from matplotlib import patches as mpatches
 import matplotlib
 import matplotlib.pyplot as plt
+import math
 
 def plot_barchart(df, dates, normed=True, autoformat=True):
     ''' plot the columns of df in a barchart. assumes df is indexed with datetime objects.
@@ -40,11 +41,13 @@ def plot_barchart(df, dates, normed=True, autoformat=True):
         ax.set_yticks([0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
     return ax
 
-def interactive_legend(ax,names,colours):
+def interactive_legend(ax,names,colours, autoscale=False):
     ''' create and return an interactive legend for the specified axis. You can click on legends to hide/show the corresponding series.
             ax: axis for which you are creating the interactive legend.
             names: list of names for the legend keys.
-            colours: list of colours for the legend keys. '''
+            colours: list of colours for the legend keys.
+            autoscale : if you hide/show series, whether the graph will readjust the scale
+                of the y-axis. '''
     
     # make legend keys
     patches = [ mpatches.Patch(facecolor=colours[i], edgecolor="black", linewidth=2.0, label=names[i])
@@ -61,6 +64,21 @@ def interactive_legend(ax,names,colours):
     for patch, line in zip(patches, lines):
         patch.set_picker(5)
         linemap[patch] = line
+    
+    # function to use for rescaling
+    def rescale(ax):
+        ''' rescales y axis to accommodate all data
+            changes the y ticks to be a bit nicer as well
+                df: the data
+                ax: axis on which the data is being plotted
+                lines: list of the series that are plotted  '''
+        # find largest value being plotted  
+        mx = max([line.get_ydata().max() for line in lines if line.get_visible()])
+        mx = mx * 1.1 # put a little bit of space above the maximum
+        step = mx/6.0
+        ticks = [ round(step*i/1000) * 1000 for i in range(6) ]
+        ax.yaxis.set_ticks(ticks)
+        plt.ylim(0,mx)
         
     # create pick event for legend
     def onpick_legends(event):
@@ -74,9 +92,12 @@ def interactive_legend(ax,names,colours):
             patch.set_alpha(1.0)
         else:
             patch.set_alpha(0.4)
+        if autoscale:
+            rescale(ax)
         fig.canvas.draw()
     
     # activate pick event for legend on the figure
     fig = ax.get_figure()
     fig.canvas.mpl_connect("pick_event", onpick_legends)
+    
     return leg
