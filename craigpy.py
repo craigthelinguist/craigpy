@@ -41,6 +41,35 @@ def plot_barchart(df, dates, normed=True, autoformat=True):
         ax.set_yticks([0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
     return ax
 
+def plot_barchart_from_series(series, normed=True, autoformat=True):
+    ''' plot the given series as a barchart.
+            normed : plot as a % of all the values
+            autoformat : if you are norming, autoformat will scale the y-axis accordingly
+        returns the axis being plotted on '''
+    
+    # norm everything if needed
+    if normed:
+        counts = {}
+        total_sum = reduce(lambda x,y : x+y, series)
+        for country in series.index:
+            count = series[country]
+            avged = count*1.0 / total_sum
+            counts[country] = avged
+        series_normed = Series(counts)
+        series_normed.order(ascending=False,inplace=True)
+        
+    if normed:
+        ax = series_normed.plot(kind="bar")
+        if autoformat:
+            ax.set_ylim(0)
+            ax.set_yticks([0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
+    else:
+        ax = series.plot(kind="bar")
+    return ax
+
+
+# In[20]:
+
 def interactive_legend(ax,names,colours, autoscale=False):
     ''' create and return an interactive legend for the specified axis. You can click on legends to hide/show the corresponding series.
             ax: axis for which you are creating the interactive legend.
@@ -95,6 +124,7 @@ def interactive_legend(ax,names,colours, autoscale=False):
         if autoscale:
             rescale(ax)
         fig.canvas.draw()
+    
     
     # activate pick event for legend on the figure
     fig = ax.get_figure()
