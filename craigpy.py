@@ -67,9 +67,6 @@ def plot_barchart_from_series(series, normed=True, autoformat=True):
         ax = series.plot(kind="bar")
     return ax
 
-
-# In[20]:
-
 def interactive_legend(ax,names,colours, autoscale=False):
     ''' create and return an interactive legend for the specified axis. You can click on legends to hide/show the corresponding series.
             ax: axis for which you are creating the interactive legend.
@@ -131,3 +128,39 @@ def interactive_legend(ax,names,colours, autoscale=False):
     fig.canvas.mpl_connect("pick_event", onpick_legends)
     
     return leg
+
+def load_cc(fname):
+    ''' load country codes from given filename; return a dict of cc -> country name '''
+    codes = {}
+    f = open(fname)
+    for line in f:
+        line = line.split(",")
+        cc = line[0]
+        country = line[1].rstrip()
+        country = country.replace(" ","\n")
+        codes[cc] = country
+    return codes
+
+def normed_series(series,order=True,ascending=False):
+    ''' given a series returns a series with all the values normalised
+        args:
+            series : the series you want to normalise
+        kargs:
+            order : whether the series that is returned should be sorted
+            ascending : if sorting, how the series should be sorted.
+        return:
+            series : a normalised series
+    '''
+    counts = {}
+    total_sum = reduce(lambda x,y : x+y, series)
+    for indx in series.index:
+        count = series[indx]
+        normed = count*1.0 / total_sum
+        counts[indx] = normed
+    series = Series(counts)
+    if order:
+        if ascending:
+            series.order(ascending=True,inplace=True)
+        else:
+            series.order(ascending=False,inplace=True)
+    return series
