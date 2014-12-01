@@ -137,7 +137,6 @@ def load_cc(fname):
         line = line.split(",")
         cc = line[0]
         country = line[1].rstrip()
-        country = country.replace(" ","\n")
         codes[cc] = country
     return codes
 
