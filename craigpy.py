@@ -163,3 +163,7 @@ def normed_series(series,order=True,ascending=False):
         else:
             series.order(ascending=False,inplace=True)
     return series
+
+def parse_yyyymmdd(x):
+    ''' take a string x of the form yyyymmdd and return the corresponding datetime64 object '''
+    return np.datetime64(x[0:4] + "-" + x[4:6] + "-" + x[6:8])
