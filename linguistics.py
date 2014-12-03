@@ -29,10 +29,5 @@ def align(str1, str2):
             matching = match(str1[i-1],str2[j-1]) + table[i-1][j-1]
             skip_str1 = -2 + table[i-1][j]
             skip_str2 = -2 + table[i][j-1]
-            print "checking row ", i, " and col ", j
-            print "comparing ", str1[i-1], " and ", str2[j-1]
-            print "matching: ", matching
-            print "skip str1: ", skip_str1
-            print "skip str2: ", skip_str2
             table[i][j] = max(matching,skip_str1,skip_str2)
     return table[len(str1)][len(str2)]
