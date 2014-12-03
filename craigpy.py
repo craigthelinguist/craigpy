@@ -1,3 +1,8 @@
+
+# coding: utf-8
+
+# In[3]:
+
 from pandas import DataFrame, Series
 import pandas as pd
 import numpy as np
@@ -167,3 +172,48 @@ def normed_series(series,order=True,ascending=False):
 def parse_yyyymmdd(x):
     ''' take a string x of the form yyyymmdd and return the corresponding datetime64 object '''
     return np.datetime64(x[0:4] + "-" + x[4:6] + "-" + x[6:8])
+
+def load_words(fname):
+    ''' load a newline-delimited file of words into a list, return the list '''
+    f = open(fname,"r")
+    words = []
+    for line in f:
+        line = line.rstrip()
+        words.append(line)
+    return words
+
+
+# In[3]:
+
+
+
+
+# In[15]:
+
+
+
+
+# In[1]:
+
+
+
+
+# In[17]:
+
+
+
+
+# In[9]:
+
+
+
+
+# In[2]:
+
+
+
+
+# In[ ]:
+
+
+
