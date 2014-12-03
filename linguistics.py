@@ -22,7 +22,6 @@ def align(str1, str2):
     rows = len(str1)+1
     cols = len(str2)+1
     table = __init_table__(rows,cols)
-    print table
     for i in range(1,rows):
         for j in range(1,cols):
             matching = __match__(str1[i-1],str2[j-1]) + table[i-1][j-1]
