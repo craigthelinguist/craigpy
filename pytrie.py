@@ -57,7 +57,7 @@ class Trie:
     
     def insert(self, word):
         if word == "":
-            return True
+            return False
         if self.contains(word):
             return False
         if self.head.__insert__(word,0):
