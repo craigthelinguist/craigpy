@@ -180,7 +180,16 @@ def load_words(fname):
     for line in f:
         line = line.rstrip()
         words.append(line)
+    f.close()
     return words
+
+def save_words(fname, words):
+    ''' save elements in words to a new file called fname
+        the elements are delimited by a newline '''
+    f = open(fname,"w")
+    for word in words:
+        f.write(word + "\n")
+    f.close()
 
 
 # In[3]:
