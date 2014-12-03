@@ -60,13 +60,9 @@ class Trie:
         return self.count
     
     def contains(self, word):
-        if word == "":
-            return True
         return self.head.__contains__(word,0)
     
     def insert(self, word):
-        if word == "":
-            return False
         if self.contains(word):
             return False
         if self.head.__insert__(word,0):
