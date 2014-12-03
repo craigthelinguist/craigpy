@@ -1,4 +1,3 @@
-
 def __init_table__(rows,cols):
     ''' initialise a 2d array with the specified number of rows and cols.
         the first row and first col will contain entries that are multiples
@@ -22,11 +21,11 @@ def align(str1, str2):
         return : int'''
     rows = len(str1)+1
     cols = len(str2)+1
-    table = init_table(rows,cols)
+    table = __init_table__(rows,cols)
     print table
     for i in range(1,rows):
         for j in range(1,cols):
-            matching = match(str1[i-1],str2[j-1]) + table[i-1][j-1]
+            matching = __match__(str1[i-1],str2[j-1]) + table[i-1][j-1]
             skip_str1 = -2 + table[i-1][j]
             skip_str2 = -2 + table[i][j-1]
             table[i][j] = max(matching,skip_str1,skip_str2)
