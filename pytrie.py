@@ -42,6 +42,15 @@ class __Node__:
         for k in keys:
             self.kids[k].__print_words__(word + k)
     
+    def __construct_list__(self, word, words):
+        if self.isTerminal:
+            words.append(word)
+        keys = self.kids.keys()
+        keys.sort()
+        for k in keys:
+            words = self.kids[k].__construct_list__(word + k, words)
+        return words
+        
 class Trie:
     def __init__(self):
         self.count = 0
@@ -73,3 +82,8 @@ class Trie:
     def print_words(self):
         print "WORDS\n====="
         self.head.__print_words__("")
+        
+    def iterwords(self):
+        ''' returns an iterable view of the trie '''
+        words = [""]
+        return self.head.__construct_list__("",words)
