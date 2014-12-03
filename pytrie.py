@@ -59,11 +59,11 @@ class Trie:
     def size(self):
         return self.count
     
-    def contains(self, word):
-        return self.head.__contains__(word,0)
+    def __contains__(self,key):
+        return self.head.__contains__(key,0)
     
     def insert(self, word):
-        if self.contains(word):
+        if word in self:
             return False
         if self.head.__insert__(word,0):
             self.count = self.count + 1
