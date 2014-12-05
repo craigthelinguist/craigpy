@@ -70,7 +70,7 @@ def __reconstruct_alignment__(t,str1,str2):
         else:
             print "something fucked up"
             print "returning what has been computed so far...."
-            return (align1,aling2)
+            return (align1,align2)
             
     # this reverses strings
     # thank you guido :^)
