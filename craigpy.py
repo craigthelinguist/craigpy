@@ -1,8 +1,3 @@
-
-# coding: utf-8
-
-# In[3]:
-
 from pandas import DataFrame, Series
 import pandas as pd
 import numpy as np
@@ -191,38 +186,27 @@ def save_words(fname, words):
         f.write(word + "\n")
     f.close()
 
+    
+def mean(items):
+    ''' return the mean of the list of items '''
+    sum_of_items = 1.0*reduce( lambda x,y : x+y, items )
+    return sum_of_items / len(items)
 
-# In[3]:
+def median(items):
+    ''' sort the list of items and return the median '''
+    items.sort()
+    length = len(items)
+    if length % 2 != 0:
+        indx = int(math.ceil(len(items)/2))
+        return items[indx]
+    else:
+        indx1 = len(items)/2 - 1
+        indx2 = indx1+1
+        return mean([items[indx1],items[indx2]])
 
-
-
-
-# In[15]:
-
-
-
-
-# In[1]:
-
-
-
-
-# In[17]:
-
-
-
-
-# In[9]:
-
-
-
-
-# In[2]:
-
-
-
-
-# In[ ]:
-
-
-
+def stdev(items):
+    ''' return the population standard deviation of the list of items '''
+    themean = mean(items)
+    diff_sqrd = [ (x-themean)**2 for x in items ]
+    diff_sqrd_mean = mean(diff_sqrd)
+    return 1.0*math.sqrt(diff_sqrd_mean)
