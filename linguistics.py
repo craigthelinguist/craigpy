@@ -91,3 +91,30 @@ def get_align(str1, str2):
         the return format is a 2-tuple with '_' inserted where there are spaces padding the string '''
     table = __compute_table__(str1,str2)
     return __reconstruct_alignment__(table,str1,str2)
+
+def entropy(string):
+    ''' return the shannon entropy of the specified string. returns a value between 0 and 1. 
+        a higher value denotes a more uncertain string. '''
+    
+    # empty string contains no information
+    if string == "":
+        return 0
+    
+    # compute probability distribution
+    histogram = {}
+    for c in string:
+        if c in histogram:
+            histogram[c] = histogram[c] + 1
+        else:
+            histogram[c] = 1
+    histogram = { char : histogram[char]*1.0 / len(string) for char in histogram.keys() }
+    
+    # compute entropy
+    total_entropy = 0
+    for prob in histogram.values():
+        entropy = prob * math.log(prob, 2)
+        total_entropy = total_entropy + entropy
+    total_entropy = -1 * total_entropy
+
+    # return metric entropy scaled to be between 0 and 1
+    return total_entropy*1.0 / len(string) * 2
