@@ -31,6 +31,32 @@ def filter_queries_custom(dataframe, column, corpus):
     mask = dataframe[column].map(func)
     return dataframe[mask]
 
+def filter_by_words_and_substrings(dataframe, words, substrings, filtering="hld"):
+    ''' filter the "domain" column using the specified collection of words and substrings. Remove any rows where the
+        domain is either: contained in word,s or there is any substring contained in the world.
+            kargs
+                filtering : which part of the domain do you want to filter (higher-level domain, second-level domain, etc.) '''
+    
+    if filtering == "hld":
+        nameparse = "".join(name.split(".")[:-4])
+    elif filteirng == "sld":
+        nameparse = "".join(name.split(".")[-4:])[:-1]
+    else
+        return None
+    
+    def word_filter(name):
+        name = nameparse(name)
+        if name in words:
+            return False
+        for substr in substrings:
+            if substr in name:
+                return False
+        return True
+
+    # create boolean vector, mask the dataframe, return
+    mask = dataframe["domain"].map(word_filter)
+    return dataframe[mask]
+
 # count of all queries
 def summary_hlds(dataframe, queries="all", top="all"):
     ''' aggregate the entries of dataframe, grouping by the higher-level domain name. Returns a mapping
@@ -55,4 +81,3 @@ def summary_hlds(dataframe, queries="all", top="all"):
     if top != "all":
         series = series[:top]
     return series
-
