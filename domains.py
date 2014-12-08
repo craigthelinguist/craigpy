@@ -2,6 +2,7 @@ import craigpy as cp
 import pandas as pd
 from pandas import Series
 from pandas import DataFrame
+import linguistics as ling
 
 def filter_queries_hld(dataframe, corpus):
     ''' filter dataframe by words in corpus. Removes those entries whose higher-level domain name is not in the supplied
