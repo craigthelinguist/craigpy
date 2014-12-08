@@ -38,9 +38,9 @@ def filter_by_words_and_substrings(dataframe, words, substrings, filtering="hld"
                 filtering : which part of the domain do you want to filter (higher-level domain, second-level domain, etc.) '''
     
     if filtering == "hld":
-        nameparse = "".join(name.split(".")[:-4])
+        nameparse = lambda x : "".join(x.split(".")[:-4])
     elif filteirng == "sld":
-        nameparse = "".join(name.split(".")[-4:])[:-1]
+        nameparse = lambda x : "".join(x.split(".")[-4:])[:-1]
     else:
         return None
     
