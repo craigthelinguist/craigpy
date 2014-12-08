@@ -41,7 +41,7 @@ def filter_by_words_and_substrings(dataframe, words, substrings, filtering="hld"
         nameparse = "".join(name.split(".")[:-4])
     elif filteirng == "sld":
         nameparse = "".join(name.split(".")[-4:])[:-1]
-    else
+    else:
         return None
     
     def word_filter(name):
