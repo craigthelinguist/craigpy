@@ -1,3 +1,5 @@
+import math as math
+
 def __init_table__(rows,cols):
     ''' initialise a 2d array with the specified number of rows and cols.
         the first row and first col will contain entries that are multiples
