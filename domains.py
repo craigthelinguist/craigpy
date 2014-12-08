@@ -31,21 +31,28 @@ def filter_queries_custom(dataframe, column, corpus):
     mask = dataframe[column].map(func)
     return dataframe[mask]
 
-def filter_by_words_and_substrings(dataframe, words, substrings, filtering="hld"):
+def filter_by_words_and_substrings(dataframe, words, substrings, filtering="hld", entropy=None):
     ''' filter the "domain" column using the specified collection of words and substrings. Remove any rows where the
         domain is either: contained in word,s or there is any substring contained in the world.
             kargs
-                filtering : which part of the domain do you want to filter (higher-level domain, second-level domain, etc.) '''
+                filtering : which part of the domain do you want to filter (higher-level domain, second-level domain, etc.)
+                entropy : give a value between 0 and 1. It will filter out any string with an
+                        entropy higher than your threshold. Default: None, will not filter by entropy.
+                '''
     
     if filtering == "hld":
         nameparse = lambda x : "".join(x.split(".")[:-4])
-    elif filteirng == "sld":
+    elif filtering == "sld":
         nameparse = lambda x : "".join(x.split(".")[-4:])[:-1]
     else:
         return None
-    
+
     def word_filter(name):
         name = nameparse(name)
+        if entropy:
+            entropy_score = ling.entropy(name)
+            if entropy_score < entropy:
+                return False
         if name in words:
             return False
         for substr in substrings:
