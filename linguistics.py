@@ -50,20 +50,20 @@ def __reconstruct_alignment__(t,str1,str2):
         score = t[row][col]
 
         # move up a row, across a col, append char to str1 and str2
-        if cangodiag and t[row-1][col-1] + __match__(str1[row-1],str2[col-1]) == score:
+        if cangodiag() and t[row-1][col-1] + __match__(str1[row-1],str2[col-1]) == score:
             row = row - 1
             col = col - 1
             align1 = align1 + str1[row]
             align2 = align2 + str2[col]
 
         # move up a row, append char to str1, space to str2
-        elif cangoabov and t[row-1][col] - 2 == score:
+        elif cangoabov() and t[row-1][col] - 2 == score:
             row = row - 1
             align1 = align1 + str1[row]
             align2 = align2 + "_"
 
         # move across a col, append char to str2, space to str1
-        elif cangoleft and t[row][col-1] - 2 == score:
+        elif cangoleft() and t[row][col-1] - 2 == score:
             col = col - 1
             align1 = align1 + "_"
             align2 = align2 + str2[col]
@@ -93,6 +93,13 @@ def get_align(str1, str2):
         the return format is a 2-tuple with '_' inserted where there are spaces padding the string '''
     table = __compute_table__(str1,str2)
     return __reconstruct_alignment__(table,str1,str2)
+
+
+
+print get_align("aawdqqskwx","ifttt")
+
+
+
 
 def entropy(string):
     ''' return the shannon entropy of the specified string. returns a value between 0 and 1. 
