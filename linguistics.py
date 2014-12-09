@@ -119,4 +119,4 @@ def entropy(string):
     total_entropy = -1 * total_entropy
 
     # return metric entropy scaled to be between 0 and 1
-    return total_entropy*1.0 / len(string) * 2
+    return total_entropy*1.0 / len(string)
