@@ -40,9 +40,9 @@ def filter_domains(dataframe, words, substrings, filtering="hld", entropy=None):
     
     # specify which part of the domain you should be filtering
     if filtering == "hld":
-        nameparse = lambda name : "".join(name.split(".")[:-4]) in words
+        nameparse = lambda name : "".join(name.split(".")[:-4])
     elif filtering == "sld":
-        nameparse = lambda name : ".".join(name.split(".")[-4:])[:-1] in words
+        nameparse = lambda name : ".".join(name.split(".")[-4:])[:-1]
     else:
         return None
     
