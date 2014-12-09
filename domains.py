@@ -5,25 +5,19 @@ from pandas import DataFrame
 import linguistics as ling
 import math as math
 
-def filter_queries_hld(dataframe, corpus):
-    ''' filter dataframe by words in corpus. Removes those entries whose higher-level domain name is not in the supplied
-        corpus.
-            dataframe : dataframe you want to filter
-            corpus : higher-level domain names that you are interested in '''
-    func = lambda name : "".join(name.split(".")[:-4]) in corpus
+def filter_domains_by_corpus(dataframe, corpus, domain="hld"):
+    ''' filter the "domain" column of the specified data frame. Remove those entries whose domain is
+        not contained in the corpus.
+            domain : either hld or sld. If hld, will check the higher-level domain name against the
+                    corpus. If sld, will check the lower-level domain name against the corpus. '''
+    if domain == "hld":
+        func = lambda name : "".join(name.split(".")[:-4]) in corpus
+    else:
+        func = lambda name : ".".join(name.split(".")[-4:])[:-1] in corpus
     mask = dataframe["domain"].map(func)
     return dataframe[mask]
 
-def filter_queries_sld(dataframe, corpus):
-    ''' filter dataframe by words in corpus. Removes those entries whose second-level domain name is not in the supplied
-        corpus.
-            dataframe : dataframe you want to filter
-            corpus : second-level domain names that you are interested in '''
-    func = lambda name : ".".join(name.split(".")[-4:])[:-1] in corpus
-    mask = dataframe["domain"].map(func)
-    return dataframe[mask]
-
-def filter_queries_custom(dataframe, column, corpus):
+def filter_column(dataframe, column, corpus):
     ''' filter dataframe by column. Removes those entries in column that are not in corpus.
         e.g.: let column = "country", and let corpus be a set of countries
             dataframe : dataframe you want to filter
@@ -33,23 +27,29 @@ def filter_queries_custom(dataframe, column, corpus):
     mask = dataframe[column].map(func)
     return dataframe[mask]
 
-def filter_by_words_and_substrings(dataframe, words, substrings, filtering="hld", entropy=None):
-    ''' filter the "domain" column using the specified collection of words and substrings. Remove any rows where the
-        domain is either: contained in word,s or there is any substring contained in the world.
-            kargs
-                filtering : which part of the domain do you want to filter (higher-level domain, second-level domain, etc.)
-                entropy : give a value between 0 and 1. It will filter out any string with an
-                        entropy higher than your threshold. Default: None, will not filter by entropy.
-                '''
+def filter_domains(dataframe, words, substrings, filtering="hld", entropy=None):
+    ''' filter the "domain" column in the specified dataframe. Remove any rows where:
+            - the name is contained in the list of words.
+            - there is a substring in substrings contained in the name.
+            - the name's entropy is lower than the specified entropy threshold.
+        key arguments:
+            filtering : either "hld" or "sld". If "hld", then filter by the high-level part of the domain.
+                if "sld" then filter by the second-level part of the domain
+            entropy : either None or a value between 0 and 1. If a value between 0 and 1, this is used as a
+                threshold. If the name has entropy lower than the specified threshold, it will be filtered. '''
     
+    # specify which part of the domain you should be filtering
     if filtering == "hld":
-        nameparse = lambda x : "".join(x.split(".")[:-4])
+        nameparse = lambda name : "".join(name.split(".")[:-4]) in corpus
     elif filtering == "sld":
-        nameparse = lambda x : "".join(x.split(".")[-4:])[:-1]
+        nameparse = lambda name : ".".join(name.split(".")[-4:])[:-1] in corpus
     else:
         return None
-
+    
+    # define a function for filtering
     def word_filter(name):
+        ''' filter the given string. Returns "true" if the string should be included, "false" if the string should
+            be removed/if the string should be filtered '''
         name = nameparse(name)
         if entropy:
             entropy_score = ling.entropy(name)
