@@ -94,13 +94,6 @@ def get_align(str1, str2):
     table = __compute_table__(str1,str2)
     return __reconstruct_alignment__(table,str1,str2)
 
-
-
-print get_align("aawdqqskwx","ifttt")
-
-
-
-
 def entropy(string):
     ''' return the shannon entropy of the specified string. returns a value between 0 and 1. 
         a higher value denotes a more uncertain string. '''
