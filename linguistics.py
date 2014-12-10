@@ -136,7 +136,7 @@ class Filter:
                 threshold : how probable a word has to be in order to match. percentage between 0 and 1. Default threshold is 0 '''
         self.threshold = threshold
         if trainingSet:
-            self.train(words)
+            self.train(trainingSet)
         else:
             self.frequencies = None
     
