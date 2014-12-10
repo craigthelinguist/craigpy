@@ -130,17 +130,20 @@ class Filter:
         specify a threshold, which is a value between 0 and 1. If the mean probability in a string exceeds the threshold, then
         the string belongs. If it is below the threshold, the string does not belong. '''
     
-    def __init__(self, trainingSet=None, threshold=0, length_stdevs=None):
+    def __init__(self, trainingSet=None, threshold=0, length_stdevs=None, inclusion=True):
         ''' create a filter.
                 trainingSet : list of words to train the filter on. If you do not specify a trainingSet, then no string will
                     belong.
                 threshold : how probable a word has to be in order to match. percentage between 0 and 1. Default threshold is 0
-                stdevs : if you specify an integer value then Filter will compute the mean and standard deviation of the length
-                    of words in the supplied trainingSet. 
+                length_stdevs : if you specify an integer value then Filter will compute the mean and standard deviation of the length
+                    of words in the supplied trainingSet.
+                inclusion : if true, will match strings that belong to the training set. If false, will match strings that do NOT
+                    belong to the trainingSet.
                 '''
         self.mean = None
         self.stdev = None
         self.acceptable_stdev = None
+        self.inclusion = inclusion
         
         self.threshold = threshold
         if trainingSet:
@@ -154,9 +157,15 @@ class Filter:
     def __get_value__(self,c1,c2):
         ''' helper function. return the probability that c2 follows c1 '''
         if c1 not in self.frequencies:
-            return 0
+            if self.inclusion:
+                return 0
+            else:
+                return 1
         elif c2 not in self.frequencies[c1]:
-            return 0
+            if self.inclusion:
+                return 0
+            else:
+                return 1
         else:
             return self.frequencies[c1][c2]
     
@@ -218,9 +227,14 @@ class Filter:
     def match(self, string):
         ''' Return true if this string belongs, or false if it does not. '''
         value = self.match_value(string)
-        return value >= self.threshold
+        return value >= self.threshold and self.inclusion
 
     def filter_words(self, words):
         ''' Take a list of words. Return those words which pass the filter. '''
         return [word for word in words if self.match(word)]
-        
+
+    def set_inclusion(self, b):
+        ''' Set whether you should match by inclusion of the set, or exclusion.
+                bool : if True, you will match strings if they are included in the training Set. if False, you will match strings
+                    if they are not included in the training Set. '''
+        self.inclusion = b
