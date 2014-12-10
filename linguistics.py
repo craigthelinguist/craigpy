@@ -166,10 +166,9 @@ class Filter:
         if self.acceptable_stdev:
             lower = self.mean - self.stdev * self.acceptable_stdev
             upper = self.mean + self.stdev * self.acceptable_stdev
-            print "acceptable range is (", lower, ",", upper, ")"
             length = len(string)
             if length < lower or length > upper:
-                print string, " was pruned because falls outside of range with length ", length
+                return 0
         for i in range(len(string)-1):
             c1 = string[i]
             c2 = string[i+1]
