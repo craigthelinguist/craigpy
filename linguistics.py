@@ -1,4 +1,5 @@
 import math as math
+import craigpy as cp
 
 def __init_table__(rows,cols):
     ''' initialise a 2d array with the specified number of rows and cols.
@@ -129,14 +130,24 @@ class Filter:
         specify a threshold, which is a value between 0 and 1. If the mean probability in a string exceeds the threshold, then
         the string belongs. If it is below the threshold, the string does not belong. '''
     
-    def __init__(self, trainingSet=None, threshold=0):
+    def __init__(self, trainingSet=None, threshold=0, length_stdevs=None):
         ''' create a filter.
                 trainingSet : list of words to train the filter on. If you do not specify a trainingSet, then no string will
                     belong.
-                threshold : how probable a word has to be in order to match. percentage between 0 and 1. Default threshold is 0 '''
+                threshold : how probable a word has to be in order to match. percentage between 0 and 1. Default threshold is 0
+                stdevs : if you specify an integer value then Filter will compute the mean and standard deviation of the length
+                    of words in the supplied trainingSet. 
+                '''
+        self.mean = None
+        self.stdev = None
+        self.acceptable_stdev = None
+        
         self.threshold = threshold
         if trainingSet:
+            self.trainingSet = trainingSet
             self.train(trainingSet)
+            if length_stdevs:
+                self.set_acceptable_length_stdevs(length_stdevs)
         else:
             self.frequencies = None
     
@@ -152,6 +163,13 @@ class Filter:
     def match_value(self, string):
         ''' Return the probability that this is a valid string, as a value from 0 to 1. '''
         sum_value = 0
+        if self.acceptable_stdev:
+            lower = self.mean - self.stdev * self.acceptable_stdev
+            upper = self.mean + self.stdev * self.acceptable_stdev
+            print "acceptable range is (", lower, ",", upper, ")"
+            length = len(string)
+            if length < lower or length > upper:
+                print string, " was pruned because falls outside of range with length ", length
         for i in range(len(string)-1):
             c1 = string[i]
             c2 = string[i+1]
@@ -189,7 +207,15 @@ class Filter:
                 fmap[successor] = normed
         
         self.frequencies = frequencies
-    
+
+    def set_acceptable_length_stdevs(self, stdevs):
+        ''' This method will determine whether you should prune based on the length of the word.
+                stdevs : if filter encounters a word more than this amount of standard deviations from the mean, it will prune '''
+        strlens = [ len(word) for word in self.trainingSet ]
+        self.mean = cp.mean(strlens)
+        self.stdev = cp.stdev(strlens)
+        self.acceptable_stdev = stdevs
+
     def match(self, string):
         ''' Return true if this string belongs, or false if it does not. '''
         value = self.match_value(string)
