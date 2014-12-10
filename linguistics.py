@@ -219,3 +219,8 @@ class Filter:
         ''' Return true if this string belongs, or false if it does not. '''
         value = self.match_value(string)
         return value >= self.threshold
+
+    def filter_words(self, words):
+        ''' Take a list of words. Return those words which pass the filter. '''
+        return [word for word in words if self.match(word)]
+        
