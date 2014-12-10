@@ -80,7 +80,6 @@ def __reconstruct_alignment__(t,str1,str2):
     align2 = align2[::-1]
     return (align1,align2)
 
-
 def align(str1, str2):
     
     ''' return the likeness of str1 to str2 based on their optimal alignment.
@@ -120,3 +119,78 @@ def entropy(string):
 
     # return metric entropy scaled to be between 0 and 1
     return total_entropy*1.0 / len(string)
+
+class Filter:
+    ''' A very basic string classifier. It works by checking the probability that one character follows another. It does this
+        for all successive pairs of strings, then computes the average and tells you whether the string belongs using a
+        specified threshold.
+        
+        The Filter needs to be trained by initialising with a list of words, or by calling train(trainingSet). You must also
+        specify a threshold, which is a value between 0 and 1. If the mean probability in a string exceeds the threshold, then
+        the string belongs. If it is below the threshold, the string does not belong. '''
+    
+    def __init__(self, trainingSet=None, threshold=0):
+        ''' create a filter.
+                trainingSet : list of words to train the filter on. If you do not specify a trainingSet, then no string will
+                    belong.
+                threshold : how probable a word has to be in order to match. percentage between 0 and 1. Default threshold is 0 '''
+        self.threshold = threshold
+        if trainingSet:
+            self.train(words)
+        else:
+            self.frequencies = None
+    
+    def __get_value__(self,c1,c2):
+        ''' helper function. return the probability that c2 follows c1 '''
+        if c1 not in self.frequencies:
+            return 0
+        elif c2 not in self.frequencies[c1]:
+            return 0
+        else:
+            return self.frequencies[c1][c2]
+    
+    def match_value(self, string):
+        ''' Return the probability that this is a valid string, as a value from 0 to 1. '''
+        sum_value = 0
+        for i in range(len(string)-1):
+            c1 = string[i]
+            c2 = string[i+1]
+            val = self.__get_value__(c1,c2)
+            sum_value = sum_value + val
+        return sum_value / (len(string)-1)
+    
+    def train(self, trainingSet):
+        ''' Train this filter using the given list of words. '''
+        frequencies = {}
+        
+        # helper method
+        def insert(c1, c2):
+            if c1 not in frequencies:
+                frequencies[c1] = {}
+            if c2 not in frequencies[c1]:
+                frequencies[c1][c2] = 1
+            else:
+                frequencies[c1][c2] = frequencies[c1][c2] + 1
+        
+        # get word count
+        for word in trainingSet:
+            for i in range(len(word)-1):
+                c1 = word[i]
+                c2 = word[i+1]
+                insert(c1,c2)
+        
+        # normalise
+        for char in frequencies:
+            fmap = frequencies[char]
+            total = reduce(lambda x,y : x+y, fmap.values())
+            for successor in fmap:
+                value = fmap[successor]
+                normed = value * 1.0 / total
+                fmap[successor] = normed
+        
+        self.frequencies = frequencies
+    
+    def match(self, string):
+        ''' Return true if this string belongs, or false if it does not. '''
+        value = self.match_value(string)
+        return value >= self.threshold
