@@ -82,7 +82,6 @@ def __reconstruct_alignment__(t,str1,str2):
     return (align1,align2)
 
 def align(str1, str2):
-    
     ''' return the likeness of str1 to str2 based on their optimal alignment.
         return : int'''
     table = __compute_table__(str1,str2)
@@ -130,39 +129,54 @@ class Filter:
         specify a threshold, which is a value between 0 and 1. If the mean probability in a string exceeds the threshold, then
         the string belongs. If it is below the threshold, the string does not belong. '''
     
-    def __init__(self, trainingSet=None, threshold=0, length_stdevs=None, inclusion=True):
+    def __init__(self, trainingSet=None, threshold=0):
         ''' create a filter.
                 trainingSet : list of words to train the filter on. If you do not specify a trainingSet, then no string will
                     belong.
-                threshold : how probable a word has to be in order to match. percentage between 0 and 1. Default threshold is 0
-                length_stdevs : if you specify an integer value then Filter will compute the mean and standard deviation of the length
-                    of words in the supplied trainingSet.
-                inclusion : if true, will match strings that belong to the training set. If false, will match strings that do NOT
-                    belong to the trainingSet.
-                '''
+                threshold : how probable a word has to be in order to match. percentage between 0 and 1. '''
         self.mean = None
         self.stdev = None
         self.acceptable_stdev = None
         self.substr_filter = None
-        self.inclusion = inclusion
+        self.word_filter = None
+        self.inclusion = True
         self.threshold = threshold
         
         if trainingSet:
             self.trainingSet = trainingSet
             self.train(trainingSet)
-            if length_stdevs:
-                self.set_acceptable_length_stdevs(length_stdevs)
         else:
             self.frequencies = None
     
     def add_substr_filter(self, substrs):
+        ''' Add an additional filter with the given collection of substrings. If you try to match a string and at least one
+            word in substrs is a substring of string, then it will return a matching value of 0.
+                substrs : collection of substrings that explicitly should not match. '''
         if isinstance(substrs, Trie):
             self.substr_filter = substrs
         else:
             self.substr_filter = Trie(substrs)
     
+    def add_word_filter(self, words):
+        ''' Add an additional filter with the given collection of words. If you try to match a string contained
+            in this collection of words, it will return a matching value of 0.
+                words : collection of words that explicitly should not match '''
+        if isinstance(words, Trie):
+            self.word_filter = words
+        else:
+            self.word_filter = Trie(words)
+    
+    def add_stdev_filter(self, stdevs):
+        ''' Add an additional filter with the given number of standard deviations. if you try to match a string, and its length
+            is more than the specified number of standard deviations away from the mean, then it will return a matching value of 0.
+                stdevs : how many stdevs away from mean is acceptable for the length of a string. '''
+        strlens = [len(word) for word in self.trainingSet]
+        self.mean = cp.mean(strlens)
+        self.stdev = cp.stdev(strlens)
+        self.acceptable_stdev = stdevs
+
     def __get_value__(self,c1,c2):
-        ''' helper function. return the probability that c2 follows c1 '''
+        ''' Helper function. Return the probability that c2 follows c1. '''
         if c1 not in self.frequencies:
             return 0
         elif c2 not in self.frequencies[c1]:
@@ -190,14 +204,24 @@ class Filter:
             if self.substr_filter.contains_substr(string):
                 return 0
         
+        # check for invalid words
+        if self.word_filter:
+            if string in self.word_filter:
+                return 0
+        
+        # sum up probabilities that each character follows on from previous, take average
         for i in range(len(string)-1):
             c1 = string[i]
             c2 = string[i+1]
             val = self.__get_value__(c1,c2)
             sum_value = sum_value + val
         value2return = sum_value / (len(string)-1)
+        
+        # set inclusion: return how probable it is that this string matches.
         if self.inclusion:
             return value2return
+        
+        # set exclusion: return how probable it is that this string doesn't match.
         else:
             return 1 - value2return
         
@@ -231,14 +255,6 @@ class Filter:
                 fmap[successor] = normed
         
         self.frequencies = frequencies
-
-    def set_acceptable_length_stdevs(self, stdevs):
-        ''' This method will determine whether you should prune based on the length of the word.
-                stdevs : if filter encounters a word more than this amount of standard deviations from the mean, it will prune '''
-        strlens = [ len(word) for word in self.trainingSet ]
-        self.mean = cp.mean(strlens)
-        self.stdev = cp.stdev(strlens)
-        self.acceptable_stdev = stdevs
 
     def match(self, string):
         ''' Return true if this string belongs, or false if it does not. '''
