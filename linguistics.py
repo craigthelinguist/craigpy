@@ -277,7 +277,7 @@ class __Node__:
     def __print_tree__(self, depth):
         print "-" * depth + self.value
         for child in self.kids.itervalues():
-            child.__print__(depth+1)
+            child.__print_tree__(depth+1)
     
     def __print_words__(self, word):
         if self.isTerminal:
@@ -320,12 +320,8 @@ class __Node__:
         return False
         
 class Trie:
-    def __init__(self):
-        ''' Create an empty Trie. '''
-        self.count = 0
-        self.head = __Node__("")
         
-    def __init__(self, words):
+    def __init__(self, words=[]):
         ''' Create a Trie that contains the given collection of words. '''
         self.count = 0
         self.head = __Node__("")
@@ -345,7 +341,6 @@ class Trie:
             in the Trie. The empty string "" is considered to not be in the Trie
             and it cannot be added.
                 return : true if the word was inserted, false otherwise. '''
-        print "adding ", word
         if word in self:
             return False
         if self.head.__insert__(word,0):
