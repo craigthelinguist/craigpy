@@ -295,27 +295,57 @@ class __Node__:
         for k in keys:
             words = self.kids[k].__construct_list__(word + k, words)
         return words
+    
+    def __substr__(self, word, string):
+        ''' Return true if this subtree contains a word that is a substring of the given string
+                word : word that you're checking for substrings
+                string : the word built up so far in the trie '''
+        
+        # if the string so far is not contained in word, then nothing in this subtree will be
+        if string not in word:
+            return False
+        
+        # if this node is a word, either string is in word or it doesn't
+        if self.isTerminal:
+            return string in word
+        
+        # check if the substring is in this subtree
+        for char in self.kids:
+            kid = self.kids[char]
+            result = kid.__substr__(word, string + char)
+            if result:
+                return True
+        
+        # substring not in this node nor its subtree
+        return False
         
 class Trie:
     def __init__(self):
+        ''' Create an empty Trie. '''
         self.count = 0
         self.head = __Node__("")
         
     def __init__(self, words):
-        ''' create and initialise trie with the given collection of words '''
+        ''' Create a Trie that contains the given collection of words. '''
         self.count = 0
         self.head = __Node__("")
         for word in words:
-            if self.insert(word):
-                self.count = self.count + 1
-    
+            self.insert(word)
+
     def __len__(self):
+        ''' Return the number of words in this Trie. '''
         return self.count
     
-    def __contains__(self,key):
-        return self.head.__contains__(key,0)
+    def __contains__(self,word):
+        ''' Return true if the given word is in the Trie. '''
+        return self.head.__contains__(word,0)
     
     def insert(self, word):
+        ''' Insert the given word into the Trie. Words can only be contained once
+            in the Trie. The empty string "" is considered to not be in the Trie
+            and it cannot be added.
+                return : true if the word was inserted, false otherwise. '''
+        print "adding ", word
         if word in self:
             return False
         if self.head.__insert__(word,0):
@@ -325,14 +355,27 @@ class Trie:
             return False
     
     def print_tree(self):
+        ''' Print a little picture representing the structure of this Trie. '''
         print "TRIE\n===="
         self.head.__print_tree__(-1)
 
     def print_words(self):
+        ''' Print the words in this Trie. '''
         print "WORDS\n====="
         self.head.__print_words__("")
         
     def iterwords(self):
-        ''' returns an iterable view of the trie '''
+        ''' Returns an iterable sequence containing those words in this Trie. '''
         words = [""]
         return self.head.__construct_list__("",words)
+    
+    def contains_substr(self,string):
+        ''' Return true if this Trie contains a word that is a substring of the given string. 
+                string : any string '''
+        root = self.head
+        for char in root.kids:
+            kid = root.kids[char]
+            result = kid.__substr__(string, char)
+            if result:
+                return True
+        return False
