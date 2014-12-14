@@ -157,15 +157,9 @@ class Filter:
     def __get_value__(self,c1,c2):
         ''' helper function. return the probability that c2 follows c1 '''
         if c1 not in self.frequencies:
-            if self.inclusion:
-                return 0
-            else:
-                return 1
+            return 0
         elif c2 not in self.frequencies[c1]:
-            if self.inclusion:
-                return 0
-            else:
-                return 1
+            return 0
         else:
             return self.frequencies[c1][c2]
     
@@ -177,14 +171,21 @@ class Filter:
             upper = self.mean + self.stdev * self.acceptable_stdev
             length = len(string)
             if length < lower or length > upper:
-                return 0
+                if self.inclusion:
+                    return 0
+                else:
+                    return 1
         for i in range(len(string)-1):
             c1 = string[i]
             c2 = string[i+1]
             val = self.__get_value__(c1,c2)
             sum_value = sum_value + val
-        return sum_value / (len(string)-1)
-    
+        value2return = sum_value / (len(string)-1)
+        if self.inclusion:
+            return value2return
+        else:
+            return 1 - value2return
+        
     def train(self, trainingSet):
         ''' Train this filter using the given list of words. '''
         frequencies = {}
@@ -230,7 +231,7 @@ class Filter:
         if self.inclusion == True:
             return value >= self.threshold
         else:
-            return value < self.threshold
+            return value >= 1 - self.threshold
 
     def filter_words(self, words):
         ''' Take a list of words. Return those words which pass the filter. '''
