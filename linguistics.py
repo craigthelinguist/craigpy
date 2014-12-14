@@ -143,9 +143,10 @@ class Filter:
         self.mean = None
         self.stdev = None
         self.acceptable_stdev = None
+        self.substr_filter = None
         self.inclusion = inclusion
-        
         self.threshold = threshold
+        
         if trainingSet:
             self.trainingSet = trainingSet
             self.train(trainingSet)
@@ -153,6 +154,12 @@ class Filter:
                 self.set_acceptable_length_stdevs(length_stdevs)
         else:
             self.frequencies = None
+    
+    def add_substr_filter(self, substrs):
+        if isinstance(substrs, Trie):
+            self.substr_filter = substrs
+        else:
+            self.substr_filter = Trie(substrs)
     
     def __get_value__(self,c1,c2):
         ''' helper function. return the probability that c2 follows c1 '''
@@ -166,6 +173,8 @@ class Filter:
     def match_value(self, string):
         ''' Return the probability that this is a valid string, as a value from 0 to 1. '''
         sum_value = 0
+        
+        # check how many standard deviations away the len(string) is
         if self.acceptable_stdev:
             lower = self.mean - self.stdev * self.acceptable_stdev
             upper = self.mean + self.stdev * self.acceptable_stdev
@@ -175,6 +184,12 @@ class Filter:
                     return 0
                 else:
                     return 1
+        
+        # check for invalid substrings
+        if self.substr_filter:
+            if self.substr_filter.contains_substr(string):
+                return 0
+        
         for i in range(len(string)-1):
             c1 = string[i]
             c2 = string[i+1]
