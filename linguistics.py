@@ -138,12 +138,15 @@ class CompositeFilter:
                 return True
         return False
 
+    def match_words(self, words):
+        ''' Take a list of words. Return those words which pass the filter. '''
+        return [word for word in words if self.match(word)]
+
     def set_inclusion(self, b):
         ''' Set whether you should match by inclusion of the set, or exclusion.
                 bool : if True, a string matches if it belongs in the training set. If False, a string matches if it does not belong
                         in the training set. '''
         self.__inclusion__ = b
-
 
 class Filter:
     ''' A very basic string classifier. It works by checking the probability that one character follows another. It does this
@@ -176,7 +179,7 @@ class Filter:
             self.__frequencies__ = {}
 
     
-    def add_substr_filter(self, substrs):
+    def set_substr_filter(self, substrs):
         ''' Specify the give substrings as meaningful. If you try to match a string and something in substrs
             is a substring of the string, then it will return a matching value of 1. '''
         if isinstance(substrs, Trie):
@@ -184,7 +187,7 @@ class Filter:
         else:
             self.__substr_filter__ = Trie(substrs)
     
-    def add_word_filter(self, words):
+    def set_word_filter(self, words):
         ''' Specify the given words as meaningful. If you try to a match a string contained
             in this colleciton of words it will return a matching value of 1. '''
         if isinstance(words, Trie):
@@ -192,7 +195,7 @@ class Filter:
         else:
             self.__word_filter__ = Trie(words)
     
-    def add_stdev_filter(self, stdevs):
+    def set_stdev_filter(self, stdevs):
         ''' Add an additional filter with the given number of standard deviations. if you try to match a string, and its length
             is more than the specified number of standard deviations away from the mean, then it will return a matching value of 0.
                 stdevs : how many stdevs away from mean is acceptable for the length of a string. '''
@@ -210,6 +213,18 @@ class Filter:
         else:
             return self.__frequencies__[c1][c2]
     
+    def set_inclusion(self, b):
+        ''' Set whether you should match by inclusion of the set, or exclusion.
+                bool : if True, you will match strings if they are included in the training Set. if False, you will match strings
+                    if they are not included in the training Set. '''
+        self.__inclusion__ = b
+
+    def set_threshold(self, value):
+        ''' Specify the threshold - how probable a string has to be before it is declared as a match. '''
+        value = min(1.0,value)
+        value = max(0.0,value)
+        self.__threshold__ = value
+
     def match_value(self, string):
         ''' Return the probability that this is a valid string, as a value from 0 to 1. '''
         sum_value = 0
@@ -283,21 +298,9 @@ class Filter:
         else:
             return value >= 1 - self.__threshold__
 
-    def filter_words(self, words):
+    def match_words(self, words):
         ''' Take a list of words. Return those words which pass the filter. '''
         return [word for word in words if self.match(word)]
-
-    def set_inclusion(self, b):
-        ''' Set whether you should match by inclusion of the set, or exclusion.
-                bool : if True, you will match strings if they are included in the training Set. if False, you will match strings
-                    if they are not included in the training Set. '''
-        self.__inclusion__ = b
-
-    def set_threshold(self, value):
-        ''' Specify the threshold - how probable a string has to be before it is declared as a match. '''
-        value = min(1.0,value)
-        value = max(0.0,value)
-        self.__threshold__ = value
 
 class __Node__:    
     def __init__(self, char, term=False):
