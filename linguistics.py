@@ -120,6 +120,31 @@ def entropy(string):
     # return metric entropy scaled to be between 0 and 1
     return total_entropy*1.0 / len(string)
 
+
+class CompositeFilter:
+    ''' A CompositeFilter is a series of Filter. It will match a string by trying to match it to each of its constituent
+        filters in turn. '''
+
+    def __init__(self, filters):
+        ''' create a CompositeFilter.
+                filters : a list of Filter instances. '''
+        self.__inclusion__ = True
+        self.__filters__ = filters
+
+    def match(self, string):
+        ''' Return true if this string belongs to any of the filters in this CompositeFilter, or false if it does not. '''
+        for f in filters:
+            if f.match(string):
+                return True
+        return False
+
+    def set_inclusion(self, b):
+        ''' Set whether you should match by inclusion of the set, or exclusion.
+                bool : if True, a string matches if it belongs in the training set. If False, a string matches if it does not belong
+                        in the training set. '''
+        self.__inclusion__ = b
+
+
 class Filter:
     ''' A very basic string classifier. It works by checking the probability that one character follows another. It does this
         for all successive pairs of strings, then computes the average and tells you whether the string belongs using a
@@ -141,12 +166,15 @@ class Filter:
         self.__word_filter__ = None
         self.__inclusion__ = True
         self.__threshold__ = threshold
+        self.__composite__ = False
+        self.__composition__ = None
         
         if trainingSet:
             self.__trainingSet__ = trainingSet
             self.train(trainingSet)
         else:
             self.__frequencies__ = None
+
     
     def add_substr_filter(self, substrs):
         ''' Specify the give substrings as meaningful. If you try to match a string and something in substrs
