@@ -133,7 +133,7 @@ class CompositeFilter:
 
     def match(self, string):
         ''' Return true if this string belongs to any of the filters in this CompositeFilter, or false if it does not. '''
-        for f in filters:
+        for f in self.__filters__:
             if f.match(string):
                 return True
         return False
@@ -173,7 +173,7 @@ class Filter:
             self.__trainingSet__ = trainingSet
             self.train(trainingSet)
         else:
-            self.__frequencies__ = None
+            self.__frequencies__ = {}
 
     
     def add_substr_filter(self, substrs):
