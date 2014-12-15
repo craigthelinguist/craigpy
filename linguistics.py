@@ -272,6 +272,12 @@ class Filter:
                     if they are not included in the training Set. '''
         self.inclusion = b
 
+    def set_threshold(self, value):
+        ''' Specify the threshold - how probable a string has to be before it is declared as a match. '''
+        value = min(1.0,value)
+        value = max(0.0,value)
+        self.threshold = value
+
 class __Node__:    
     def __init__(self, char, term=False):
         self.value = char
