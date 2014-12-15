@@ -123,28 +123,44 @@ def entropy(string):
 
 class CompositeFilter:
     ''' A CompositeFilter is a series of Filter. It will match a string by trying to match it to each of its constituent
-        filters in turn. '''
+        filters. There are two modes "or", "and".
+            "or": match a string if it matches any of the filters
+            "and": match a string if it matches all of the filters '''
 
-    def __init__(self, filters):
+    def __init__(self, filters, type="or"):
         ''' create a CompositeFilter.
-                filters : a list of Filter instances. '''
+                filters : a list of Filter instances.
+                type : "or", match a string if it matches any filter
+                       "and", match a string if it matches all filters '''
         self.__inclusion__ = True
         self.__filters__ = filters
+        self.__type__ = type
 
     def match(self, string):
         ''' Return true if this string belongs to any of the filters in this CompositeFilter, or false if it does not. '''
-        for f in self.__filters__:
-            if f.match(string):
-                return True
-        return False
+
+        # create map, map
+        matching = lambda fil : fil.match(string)
+        bool_vector = map(matching, self.__filters__)
+
+        # create reduce
+        if self.__type__ == "or":
+            reduction = lambda x,y : x or y
+        elif self.__type__ == "and":
+            reduction = lambda x,y : x and y
+        else:
+            print "unknown matching parameter: ", self.__type__
+            return None
+
+        # reduce
+        return reduce(reduction, bool_vector)
 
     def match_words(self, words):
         ''' Take a list of words. Return those words which pass the filter. '''
         trie = Trie()
-        for f in self.__filters__:
-            for string in words:
-                if f.match(string):
-                    trie.insert(string)
+        for string in words:
+            if self.match(string):
+                trie.insert(string)
         return trie.iterwords()
 
     def set_inclusion(self, b):
@@ -425,7 +441,7 @@ class Trie:
         
     def iterwords(self):
         ''' Returns an iterable sequence containing those words in this Trie. '''
-        words = [""]
+        words = []
         return self.head.__construct_list__("",words)
     
     def contains_substr(self,string):
