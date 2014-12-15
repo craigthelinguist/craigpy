@@ -149,18 +149,16 @@ class Filter:
             self.frequencies = None
     
     def add_substr_filter(self, substrs):
-        ''' Add an additional filter with the given collection of substrings. If you try to match a string and at least one
-            word in substrs is a substring of string, then it will return a matching value of 0.
-                substrs : collection of substrings that explicitly should not match. '''
+        ''' Specify the give substrings as meaningful. If you try to match a string and something in substrs
+            is a substring of the string, then it will return a matching value of 1. '''
         if isinstance(substrs, Trie):
             self.substr_filter = substrs
         else:
             self.substr_filter = Trie(substrs)
     
     def add_word_filter(self, words):
-        ''' Add an additional filter with the given collection of words. If you try to match a string contained
-            in this collection of words, it will return a matching value of 0.
-                words : collection of words that explicitly should not match '''
+        ''' Specify the given words as meaningful. If you try to a match a string contained
+            in this colleciton of words it will return a matching value of 1. '''
         if isinstance(words, Trie):
             self.word_filter = words
         else:
@@ -199,15 +197,15 @@ class Filter:
                 else:
                     return 1
         
-        # check for invalid substrings
+        # check for explicit substrings
         if self.substr_filter:
             if self.substr_filter.contains_substr(string):
-                return 0
+                return 1
         
-        # check for invalid words
+        # check for explicit words
         if self.word_filter:
             if string in self.word_filter:
-                return 0
+                return 1
         
         # sum up probabilities that each character follows on from previous, take average
         for i in range(len(string)-1):
