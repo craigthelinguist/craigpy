@@ -140,12 +140,12 @@ class CompositeFilter:
 
     def match_words(self, words):
         ''' Take a list of words. Return those words which pass the filter. '''
-        wordset = Trie()
+        trie = Trie()
         for f in self.__filters__:
             for string in words:
                 if f.match(string):
-                    wordset.add(string)
-        return wordset
+                    trie.insert(string)
+        return trie.iterwords()
 
     def set_inclusion(self, b):
         ''' Set whether you should match by inclusion of the set, or exclusion.
