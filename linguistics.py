@@ -321,10 +321,12 @@ class Filter:
 
     def match_words(self, words):
         ''' Take a list of words. Return those words which pass the filter. '''
+        wordstoreturn = Trie()
         if self.__inclusion__:
-            return [word for word in words if self.match(word)]
-        elif self.__inclusion__:
-            return [word for word in words if not self.match(word)]
+            for word in words:
+                if self.match(word):
+                    wordstoreturn.insert(word)
+        return wordstoreturn.iterwords()
 
 class __Node__:    
     def __init__(self, char, term=False):
