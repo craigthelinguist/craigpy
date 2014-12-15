@@ -134,75 +134,75 @@ class Filter:
                 trainingSet : list of words to train the filter on. If you do not specify a trainingSet, then no string will
                     belong.
                 threshold : how probable a word has to be in order to match. percentage between 0 and 1. '''
-        self.mean = None
-        self.stdev = None
-        self.acceptable_stdev = None
-        self.substr_filter = None
-        self.word_filter = None
-        self.inclusion = True
-        self.threshold = threshold
+        self.__mean__ = None
+        self.__stdev__ = None
+        self.__acceptable_stdev__ = None
+        self.__substr_filter__ = None
+        self.__word_filter__ = None
+        self.__inclusion__ = True
+        self.__threshold__ = threshold
         
         if trainingSet:
-            self.trainingSet = trainingSet
+            self.__trainingSet__ = trainingSet
             self.train(trainingSet)
         else:
-            self.frequencies = None
+            self.__frequencies__ = None
     
     def add_substr_filter(self, substrs):
         ''' Specify the give substrings as meaningful. If you try to match a string and something in substrs
             is a substring of the string, then it will return a matching value of 1. '''
         if isinstance(substrs, Trie):
-            self.substr_filter = substrs
+            self.__substr_filter__ = substrs
         else:
-            self.substr_filter = Trie(substrs)
+            self.__substr_filter__ = Trie(substrs)
     
     def add_word_filter(self, words):
         ''' Specify the given words as meaningful. If you try to a match a string contained
             in this colleciton of words it will return a matching value of 1. '''
         if isinstance(words, Trie):
-            self.word_filter = words
+            self.__word_filter__ = words
         else:
-            self.word_filter = Trie(words)
+            self.__word_filter__ = Trie(words)
     
     def add_stdev_filter(self, stdevs):
         ''' Add an additional filter with the given number of standard deviations. if you try to match a string, and its length
             is more than the specified number of standard deviations away from the mean, then it will return a matching value of 0.
                 stdevs : how many stdevs away from mean is acceptable for the length of a string. '''
-        strlens = [len(word) for word in self.trainingSet]
-        self.mean = cp.mean(strlens)
-        self.stdev = cp.stdev(strlens)
-        self.acceptable_stdev = stdevs
+        strlens = [len(word) for word in self.__trainingSet__]
+        self.__mean__ = cp.mean(strlens)
+        self.__stdev__ = cp.stdev(strlens)
+        self.__acceptable_stdev__ = stdevs
 
     def __get_value__(self,c1,c2):
         ''' Helper function. Return the probability that c2 follows c1. '''
-        if c1 not in self.frequencies:
+        if c1 not in self.__frequencies__:
             return 0
-        elif c2 not in self.frequencies[c1]:
+        elif c2 not in self.__frequencies__[c1]:
             return 0
         else:
-            return self.frequencies[c1][c2]
+            return self.__frequencies__[c1][c2]
     
     def match_value(self, string):
         ''' Return the probability that this is a valid string, as a value from 0 to 1. '''
         sum_value = 0
         
         # check how many standard deviations away the len(string) is
-        if self.acceptable_stdev:
-            lower = self.mean - self.stdev * self.acceptable_stdev
-            upper = self.mean + self.stdev * self.acceptable_stdev
+        if self.__acceptable_stdev__:
+            lower = self.__mean__ - self.__stdev__ * self.__acceptable_stdev__
+            upper = self.__mean__ + self.__stdev__ * self.__acceptable_stdev__
             length = len(string)
             if length < lower or length > upper:
-                return 1 if self.inclusion else 0
+                return 1 if self.__inclusion__ else 0
         
         # check for explicit substrings
-        if self.substr_filter:
-            if self.substr_filter.contains_substr(string):
-                return 1 if self.inclusion else 0
+        if self.__substr_filter__:
+            if self.__substr_filter__.contains_substr(string):
+                return 1 if self.__inclusion__ else 0
         
         # check for explicit words
-        if self.word_filter:
-            if string in self.word_filter:
-                return 1 if self.inclusion else 0
+        if self.__word_filter__:
+            if string in self.__word_filter__:
+                return 1 if self.__inclusion__ else 0
         
         # sum up probabilities that each character follows on from previous, take average
         for i in range(len(string)-1):
@@ -214,7 +214,7 @@ class Filter:
         
         # set inclusion: return how probable it is that this string matches.
         # set exclusion: return how probable it is that this string doesn't match.
-        return value2return if self.inclusion else 1 - value2return
+        return value2return if self.__inclusion__ else 1 - value2return
 
     def train(self, trainingSet):
         ''' Train this filter using the given list of words. '''
@@ -245,15 +245,15 @@ class Filter:
                 normed = value * 1.0 / total
                 fmap[successor] = normed
         
-        self.frequencies = frequencies
+        self.__frequencies__ = frequencies
 
     def match(self, string):
         ''' Return true if this string belongs, or false if it does not. '''
         value = self.match_value(string)
-        if self.inclusion == True:
-            return value >= self.threshold
+        if self.__inclusion__ == True:
+            return value >= self.__threshold__
         else:
-            return value >= 1 - self.threshold
+            return value >= 1 - self.__threshold__
 
     def filter_words(self, words):
         ''' Take a list of words. Return those words which pass the filter. '''
@@ -263,13 +263,13 @@ class Filter:
         ''' Set whether you should match by inclusion of the set, or exclusion.
                 bool : if True, you will match strings if they are included in the training Set. if False, you will match strings
                     if they are not included in the training Set. '''
-        self.inclusion = b
+        self.__inclusion__ = b
 
     def set_threshold(self, value):
         ''' Specify the threshold - how probable a string has to be before it is declared as a match. '''
         value = min(1.0,value)
         value = max(0.0,value)
-        self.threshold = value
+        self.__threshold__ = value
 
 class __Node__:    
     def __init__(self, char, term=False):
