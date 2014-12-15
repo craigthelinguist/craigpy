@@ -192,20 +192,17 @@ class Filter:
             upper = self.mean + self.stdev * self.acceptable_stdev
             length = len(string)
             if length < lower or length > upper:
-                if self.inclusion:
-                    return 0
-                else:
-                    return 1
+                return 1 if self.inclusion else 0
         
         # check for explicit substrings
         if self.substr_filter:
             if self.substr_filter.contains_substr(string):
-                return 1
+                return 1 if self.inclusion else 0
         
         # check for explicit words
         if self.word_filter:
             if string in self.word_filter:
-                return 1
+                return 1 if self.inclusion else 0
         
         # sum up probabilities that each character follows on from previous, take average
         for i in range(len(string)-1):
@@ -216,13 +213,9 @@ class Filter:
         value2return = sum_value / (len(string)-1)
         
         # set inclusion: return how probable it is that this string matches.
-        if self.inclusion:
-            return value2return
-        
         # set exclusion: return how probable it is that this string doesn't match.
-        else:
-            return 1 - value2return
-        
+        return value2return if self.inclusion else 1 - value2return
+
     def train(self, trainingSet):
         ''' Train this filter using the given list of words. '''
         frequencies = {}
