@@ -158,11 +158,16 @@ class CompositeFilter:
     def match_words(self, words):
         ''' Take a list of words. Return those words which pass the filter. '''
         trie = Trie()
-        for string in words:
-            if self.match(string):
-                trie.insert(string)
-        return trie.iterwords()
 
+        if self.__inclusion__:
+            mapping = lambda x : self.match(x)
+        else:
+            mapping = lambda x : not self.match(x)
+
+        bool_vector = map(mapping, words)
+
+        return [word for (word, bool) in zip(words, bool_vector) if bool]
+    
     def set_inclusion(self, b):
         ''' Set whether you should match by inclusion of the set, or exclusion.
                 bool : if True, a string matches if it belongs in the training set. If False, a string matches if it does not belong
