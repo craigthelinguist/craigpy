@@ -221,13 +221,18 @@ class Filter:
         else:
             self.__word_filter__ = Trie(words)
     
-    def set_stdev_filter(self, stdevs):
+    def set_stdev_filter(self, stdevs, mean=None, stdev=None):
         ''' Add an additional filter with the given number of standard deviations. if you try to match a string, and its length
             is more than the specified number of standard deviations away from the mean, then it will return a matching value of 0.
+            If mean and standard deviation are not specified, this will be inferred from the training set.
                 stdevs : how many stdevs away from mean is acceptable for the length of a string. '''
-        strlens = [len(word) for word in self.__trainingSet__]
-        self.__mean__ = cp.mean(strlens)
-        self.__stdev__ = cp.stdev(strlens)
+        if mean==None or stdev==None:
+            strlens = [len(word) for word in self.__trainingSet__]
+            self.__mean__ = cp.mean(strlens)
+            self.__stdev__ = cp.stdev(strlens)
+        else:
+            self.__mean__ = mean
+            self.__stdev__ = stdev
         self.__acceptable_stdev__ = stdevs
 
     def __get_value__(self,c1,c2):
