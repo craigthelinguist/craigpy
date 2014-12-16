@@ -1,7 +1,7 @@
 craigpy
 =======
 
-Some data analysis utilities for pandas, numpy, and matplotlib that I'm using.
+Some data analysis utilities that build upon pandas, matplotlib, and numpy.
 
 craigpy : random utilities for plotting graphs, parsing dates, and saving/loading files of words.
 
