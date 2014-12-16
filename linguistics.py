@@ -246,40 +246,6 @@ class Filter:
         value = max(0.0,value)
         self.__threshold__ = value
 
-    def match_value(self, string):
-        ''' Return the probability that this is a valid string, as a value from 0 to 1. '''
-        sum_value = 0
-        
-        # check how many standard deviations away the len(string) is
-        if self.__acceptable_stdev__:
-            lower = self.__mean__ - self.__stdev__ * self.__acceptable_stdev__
-            upper = self.__mean__ + self.__stdev__ * self.__acceptable_stdev__
-            length = len(string)
-            if length < lower or length > upper:
-                return 1 if self.__inclusion__ else 0
-        
-        # check for explicit substrings
-        if self.__substr_filter__:
-            if self.__substr_filter__.contains_substr(string):
-                return 1 if self.__inclusion__ else 0
-        
-        # check for explicit words
-        if self.__word_filter__:
-            if string in self.__word_filter__:
-                return 1 if self.__inclusion__ else 0
-        
-        # sum up probabilities that each character follows on from previous, take average
-        for i in range(len(string)-1):
-            c1 = string[i]
-            c2 = string[i+1]
-            val = self.__get_value__(c1,c2)
-            sum_value = sum_value + val
-        value2return = sum_value / (len(string)-1)
-        
-        # set inclusion: return how probable it is that this string matches.
-        # set exclusion: return how probable it is that this string doesn't match.
-        return value2return if self.__inclusion__ else 1 - value2return
-
     def train(self, trainingSet):
         ''' Train this filter using the given list of words. '''
         frequencies = {}
@@ -311,21 +277,58 @@ class Filter:
         
         self.__frequencies__ = frequencies
 
+    def match_value(self, string):
+        ''' Return the probability that this is a valid string, as a value from 0 to 1. '''
+        sum_value = 0
+        
+        # check how many standard deviations away the len(string) is
+        if self.__acceptable_stdev__:
+            lower = self.__mean__ - self.__stdev__ * self.__acceptable_stdev__
+            upper = self.__mean__ + self.__stdev__ * self.__acceptable_stdev__
+            length = len(string)
+            if length < lower or length > upper:
+                return 2 if self.__inclusion__ else -1
+        
+        # check for explicit substrings
+        if self.__substr_filter__:
+            if self.__substr_filter__.contains_substr(string):
+                return 2 if self.__inclusion__ else -1
+        
+        # check for explicit words
+        if self.__word_filter__:
+            if string in self.__word_filter__:
+                return 2 if self.__inclusion__ else -1
+        
+        # sum up probabilities that each character follows on from previous, take average
+        for i in range(len(string)-1):
+            c1 = string[i]
+            c2 = string[i+1]
+            val = self.__get_value__(c1,c2)
+            sum_value = sum_value + val
+        value2return = sum_value / (len(string)-1)
+        
+        # set inclusion: return how probable it is that this string matches.
+        # set exclusion: return how probable it is that this string doesn't match.
+        return value2return if self.__inclusion__ else 1 - value2return
+
     def match(self, string):
         ''' Return true if this string belongs, or false if it does not. '''
         value = self.match_value(string)
-        if self.__inclusion__ == True:
+        if self.__inclusion__:
+            #print "checking ", value, " >= ", self.__threshold__
+            #print value >= self.__threshold__
             return value >= self.__threshold__
         else:
+            #print "checking ", value, " > 1 - ", self.__threshold__
+            #print value > 1 - self.__threshold__
             return value >= 1 - self.__threshold__
 
     def match_words(self, words):
         ''' Take a list of words. Return those words which pass the filter. '''
         wordstoreturn = Trie()
-        if self.__inclusion__:
-            for word in words:
-                if self.match(word):
-                    wordstoreturn.insert(word)
+        for word in words:
+            if self.match(word):
+               wordstoreturn.insert(word)
         return wordstoreturn.iterwords()
 
 class __Node__:    
