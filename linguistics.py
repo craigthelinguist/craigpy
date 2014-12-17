@@ -140,8 +140,11 @@ class CompositeFilter:
         ''' Return true if this string belongs to any of the filters in this CompositeFilter, or false if it does not. '''
 
         # create map, map
-        matching = lambda fil : fil.match(string)
-        bool_vector = map(matching, self.__filters__)
+        if self.__inclusion__:
+            mapping = lambda fil : fil.match(string)
+        else:
+            mapping = lambda fil : not fil.match(string)
+        bool_vector = map(mapping, self.__filters__)
 
         # create reduce
         if self.__type__ == "or":
@@ -157,16 +160,7 @@ class CompositeFilter:
 
     def match_words(self, words):
         ''' Take a list of words. Return those words which pass the filter. '''
-        trie = Trie()
-
-        if self.__inclusion__:
-            mapping = lambda x : self.match(x)
-        else:
-            mapping = lambda x : not self.match(x)
-
-        bool_vector = map(mapping, words)
-
-        return [word for (word, bool) in zip(words, bool_vector) if bool]
+        return [word for word in words if self.match(word)]
     
     def set_inclusion(self, b):
         ''' Set whether you should match by inclusion of the set, or exclusion.
