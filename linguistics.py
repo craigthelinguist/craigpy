@@ -499,11 +499,11 @@ def meaningless_string_filter():
     
     # english filter
     english_words = cp.load_words("../corpora/english")
-    english_filter = ling.Filter(trainingSet=english_words)
+    english_filter = Filter(trainingSet=english_words)
     english_filter.set_threshold(0.25)
     
     # phrase filter
-    phrase_filter = ling.Filter()
+    phrase_filter = Filter()
     phrase_filter.set_threshold(1)
     substrs = cp.load_words("../filter/substrs")
     words = cp.load_words("../filter/words")
@@ -511,14 +511,14 @@ def meaningless_string_filter():
     phrase_filter.set_word_filter(words)
     
     # fiddle with params
-    meaningless_filter = ling.CompositeFilter([english_filter,phrase_filter], type="or")
+    meaningless_filter = CompositeFilter([english_filter,phrase_filter], type="or")
     meaningless_filter.set_inclusion(False)
 
     # set wordlength filter
     wordlen_mean = 10.976
     wordlen_stdev = 2.679
     acceptable_stdevs = 2
-    meaningless_filter.set_stdev_filter(mean,stdev,2)
+    meaningless_filter.set_stdev_filter(wordlen_mean,wordlen_stdev,acceptable_stdevs)
     
     return meaningless_filter
 
@@ -528,17 +528,17 @@ def meaningful_string_filter():
         hld is, and by a predefined set of words and substrings. '''
     
     english_words = cp.load_words("../corpora/english")
-    english_filter = ling.Filter(trainingSet=english_words)
+    english_filter = Filter(trainingSet=english_words)
     english_filter.set_threshold(0.20)
     
-    phrase_filter = ling.Filter()
+    phrase_filter = Filter()
     phrase_filter.set_threshold(1)
     substrs = cp.load_words("../filter/substrs")
     words = cp.load_words("../filter/words")
     phrase_filter.set_substr_filter(substrs)
     phrase_filter.set_word_filter(words)
     
-    meaningful_filter = ling.CompositeFilter([english_filter,phrase_filter], type="or")
+    meaningful_filter = CompositeFilter([english_filter,phrase_filter], type="or")
     meaningful_filter.set_inclusion(True)
     return meaningful_filter
 
