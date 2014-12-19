@@ -139,11 +139,8 @@ class CompositeFilter:
     def match(self, string):
         ''' Return true if this string belongs to any of the filters in this CompositeFilter, or false if it does not. '''
 
-        # create map, map
-        if self.__inclusion__:
-            mapping = lambda fil : fil.match(string)
-        else:
-            mapping = lambda fil : not fil.match(string)
+        # create bool_vector
+        mapping = lambda fil : fil.match(string)
         bool_vector = map(mapping, self.__filters__)
 
         # create reduce
@@ -155,8 +152,11 @@ class CompositeFilter:
             print "unknown matching parameter: ", self.__type__
             return None
 
-        # reduce
-        return reduce(reduction, bool_vector)
+        ans = reduce(reduction, bool_vector)
+        if not self.__inclusion__:
+            ans = not ans
+
+        return ans 
 
     def match_words(self, words):
         ''' Take a list of words. Return those words which pass the filter. '''
