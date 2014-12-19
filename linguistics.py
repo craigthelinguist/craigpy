@@ -135,9 +135,20 @@ class CompositeFilter:
         self.__inclusion__ = True
         self.__filters__ = filters
         self.__type__ = type
+        self.__mean__ = None
+        self.__stdev__ = None
+        self.__acceptable_stdevs__ = None
 
     def match(self, string):
         ''' Return true if this string belongs to any of the filters in this CompositeFilter, or false if it does not. '''
+
+        if self.__acceptable_stdevs__:
+            residual = self.__stdev__ * self.__acceptable_stdevs__
+            lower = self.__mean__ - residual
+            upper = self.__mean__ + residual
+            length = len(string)
+            if length < lower or length > upper:
+                return False
 
         # create bool_vector
         mapping = lambda fil : fil.match(string)
@@ -167,6 +178,13 @@ class CompositeFilter:
                 bool : if True, a string matches if it belongs in the training set. If False, a string matches if it does not belong
                         in the training set. '''
         self.__inclusion__ = b
+
+    def set_stdev_filter(self, mean, stdev, acceptable_stdevs):
+        ''' Filter strings whose length is anything more than acceptable_stdevs number of stdevs
+            away from mean. In other words, do not match a string if it is too far away from the mean. '''
+        self.__mean__ = mean
+        self.__stdev__ = stdev
+        self.__acceptable_stdevs__ = acceptable_stdevs
 
 class Filter:
     ''' A very basic string classifier. It works by checking the probability that one character follows another. It does this
@@ -466,3 +484,64 @@ class Trie:
             if result:
                 return True
         return False
+
+
+
+
+
+'''
+some useful preset filters
+'''
+
+def meaningless_string_filter():
+    '''Classifies words as being random, nonsense strings, ~10 chars long
+       Numbers not valid, symbols not valid. '''
+    
+    # english filter
+    english_words = cp.load_words("../corpora/english")
+    english_filter = ling.Filter(trainingSet=english_words)
+    english_filter.set_threshold(0.25)
+    
+    # phrase filter
+    phrase_filter = ling.Filter()
+    phrase_filter.set_threshold(1)
+    substrs = cp.load_words("../filter/substrs")
+    words = cp.load_words("../filter/words")
+    phrase_filter.set_substr_filter(substrs)
+    phrase_filter.set_word_filter(words)
+    
+    # fiddle with params
+    meaningless_filter = ling.CompositeFilter([english_filter,phrase_filter], type="or")
+    meaningless_filter.set_inclusion(False)
+
+    # set wordlength filter
+    wordlen_mean = 10.976
+    wordlen_stdev = 2.679
+    acceptable_stdevs = 2
+    meaningless_filter.set_stdev_filter(mean,stdev,2)
+    
+    return meaningless_filter
+
+def meaningful_string_filter():
+    ''' Classifies high-level domain-names as being meaningful or having some
+        kind of intent or purpose. Filters mostly by how English-sounding the
+        hld is, and by a predefined set of words and substrings. '''
+    
+    english_words = cp.load_words("../corpora/english")
+    english_filter = ling.Filter(trainingSet=english_words)
+    english_filter.set_threshold(0.20)
+    
+    phrase_filter = ling.Filter()
+    phrase_filter.set_threshold(1)
+    substrs = cp.load_words("../filter/substrs")
+    words = cp.load_words("../filter/words")
+    phrase_filter.set_substr_filter(substrs)
+    phrase_filter.set_word_filter(words)
+    
+    meaningful_filter = ling.CompositeFilter([english_filter,phrase_filter], type="or")
+    meaningful_filter.set_inclusion(True)
+    return meaningful_filter
+
+
+
+
