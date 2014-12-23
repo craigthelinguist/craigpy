@@ -1,6 +1,34 @@
 import math as math
 import craigpy as cp
 
+
+def levenshtein(str1, str2):
+    ''' Compute the Levenshtein distance between two specified strings. '''
+    
+    # create table
+    rows = len(str1) + 1
+    cols = len(str2) + 1
+    table = [[0 for col in range(cols)] for row in range(rows)]
+    
+    # init table
+    for col in range(cols):
+        table[0][col] = col
+    for row in range(rows):
+        table[row][0] = row
+        
+    # compute
+    for row in range(1,len(str1)+1):
+        for col in range(1,len(str2)+1):
+            left = table[row-1][col] + 1
+            above = table[row][col-1] + 1
+            diag = table[row-1][col-1]
+            if str1[row-1] != str2[col-1]:
+                diag = diag + 1
+            table[row][col] = min(left,above,diag)
+    
+    # return
+    return table[len(str1)][len(str2)]
+
 def __init_table__(rows,cols):
     ''' initialise a 2d array with the specified number of rows and cols.
         the first row and first col will contain entries that are multiples
@@ -80,6 +108,7 @@ def __reconstruct_alignment__(t,str1,str2):
     align1 = align1[::-1]
     align2 = align2[::-1]
     return (align1,align2)
+    
 
 def align(str1, str2):
     ''' return the likeness of str1 to str2 based on their optimal alignment.
