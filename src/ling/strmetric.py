@@ -1,6 +1,30 @@
 
-def levenshtein(str1, str2, case_sensitive=False,
+def levenshtein(string1, string2, case_sensitive=False,
 				insertion=1, deletion=1, skip=0, transform=1):
+	'''
+	Compute the Levenshtein distance between two strings.
+	Returns int
+
+	Operations:
+	------------------
+		insertion : int
+			insert a character into string A
+			default: 1
+		deletion : int
+			delete character at string A
+			default: 1
+		skip : int
+			do nothing to current characters of string A and be
+			default: 0
+		transform : int
+			transform A's character into B's character
+			default: 1
+
+	Keyword Arguments:
+	------------------
+		case_sensitive : bool
+			whether uppercase and lowercase chars should be considered the same
+	'''
 	operations = {
 		"deletion" : deletion,
 		"insertion" : insertion,
@@ -11,6 +35,26 @@ def levenshtein(str1, str2, case_sensitive=False,
 
 def seq_align(str1, str2, case_sensitive=False,
 			  match=1, mismatch=-1, skip=-2):
+	'''
+	Compute the score of the optimal sequence alignment of two strings.
+
+	Operations:
+	-----------
+		match : int
+			cost of matching two of the same characters
+			default: 1
+		mismatch : int
+			cost of matching two different characters
+			default: -1
+		skip : int
+			cost of skipping over a string by appending padding
+			default: -2
+
+	Keyword Arguments:
+	------------------
+		case_sensitive : bool
+			whether uppercase and lowercase chars should be considered the same
+	'''
 	operations = {
 		"insertion" : skip,
 		"deletion" : skip,
@@ -26,17 +70,24 @@ def edit_dist(str1, str2, operations, case_sensitive=False, minimise=True):
 
 	Parameters:
 	-----------
-	str1 : str
-		first string to compare.
-	str2 : str
-		second string to compare.
 	operations : { str -> int }
-		operations to use and their associated cost
+		operations to use and their associated cost.
+		valid operations: "insertion", "deletion", "transform", "skip".
+		must have "insertion" and "deletion"
 
 	Keyword Arguments:
 	------------------
-
+	case_sensitive : bool
+		Whether to treat uppercase and lowercase characters the same.
+		Default: False
+	minimise : bool
+		Whether we want the highest score, or the lowest score.
+		Default: True (lowest score)
 	'''
+
+	if "insertion" not in operations or "deletion" not in operations:
+		raise KeyError("Edit distance needs costs associated with insertion and deletion operations.")
+
 	if not case_sensitive:
 		str1 = str1.lower()
 		str2 = str2.lower()
