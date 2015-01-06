@@ -28,8 +28,8 @@ def levenshtein(string1, string2, case_sensitive=False,
 	operations = {
 		"deletion" : deletion,
 		"insertion" : insertion,
-		"skip" : 0,
-		"transform " : 1
+		"skip" : skip,
+		"transform " : transform
 	}
 	return edit_dist(str1, str2, operations, case_sensitive, minimise=True)
 
