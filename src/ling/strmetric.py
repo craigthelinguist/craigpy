@@ -1,114 +1,82 @@
-def levenshtein(str1, str2, case_sensitive=False):
-    '''
-    Compute the Levenshtein distance between two strings.
-    Returns int.
 
-    Parameters:
-    -----------
-    str1 : str
-    	first string.
-    str2 : str
-    	second string.
+def levenshtein(str1, str2, case_sensitive=False,
+				insertion=1, deletion=1, skip=0, transform=1):
+	operations = {
+		"deletion" : deletion,
+		"insertion" : insertion,
+		"skip" : 0,
+		"transform " : 1
+	}
+	return edit_dist(str1, str2, operations, case_sensitive, minimise=True)
 
-    Keyword Arguments:
-    ------------------
-    case_sensitive : bool
-    	whether uppercase and lowercase characters should be treated the same.
-    	(default=False)
-    '''
+def seq_align(str1, str2, case_sensitive=False,
+			  match=1, mismatch=-1, skip=-2):
+	operations = {
+		"insertion" : skip,
+		"deletion" : skip,
+		"skip" : match,
+		"transform" : mismatch
+	}
+	return edit_dist(str1, str2, operations, case_sensitive, minimise=False)
 
-    if not case_sensitive:
-    	str1 = str1.lower()
-    	str2 = str2.lower()
-    
-    # create table
-    rows = len(str1) + 1
-    cols = len(str2) + 1
-    table = [[0 for col in range(cols)] for row in range(rows)]
-    
-    # init table
-    for col in range(cols):
-        table[0][col] = col
-    for row in range(rows):
-        table[row][0] = row
-        
-    # compute
-    for row in range(1,len(str1)+1):
-        for col in range(1,len(str2)+1):
-            left = table[row-1][col] + 1
-            above = table[row][col-1] + 1
-            diag = table[row-1][col-1]
-            if str1[row-1] != str2[col-1]:
-                diag = diag + 1
-            table[row][col] = min(left,above,diag)
-    
-    # return
-    return table[len(str1)][len(str2)]
-
-def alignment_score(str1, str2, match=1, mismatch=-1, skip=-2, case_sensitive=False):
+def edit_dist(str1, str2, operations, case_sensitive=False, minimise=True):
 	'''
-	Compute the score for the optimal way to align two strings.
+	Compute the edit distance between two strings.
 	Returns int.
 
 	Parameters:
 	-----------
-		str1 : str
-			first string to align.
-		str2 : str
-			second string to align.
+	str1 : str
+		first string to compare.
+	str2 : str
+		second string to compare.
+	operations : { str -> int }
+		operations to use and their associated cost
 
 	Keyword Arguments:
 	------------------
-		match : int
-			score that should be applied when two identical characters are aligned.
-			(default=1)
-		mismatch : int
-			score that should be applied when two different characters are aligned.
-			(default=-1)
-		skip : int
-			score that should be applied when a character has to be aligned with a skip.
-			(default=-2)
-		case_sensitive : bool
-			whether you should treat uppercase and lowercase chars the same
-			(default=False)
-	'''
 
+	'''
 	if not case_sensitive:
 		str1 = str1.lower()
 		str2 = str2.lower()
 
-	#------------------ helper function
-	def matching(c1, c2):
-		if (c1 == c2):
-			return match
-		else:
-			return mismatch
-
-	#------------------ init rows
-	# uses an optimisation - we only care about the score, so we only need to know the last
-	# two rows that have been computed to fill in the table.
+	# init rows
+	# use optimisation - we only care about score, so we only need to know last two rows
 	rows = len(str1) + 1
 	cols = len(str2) + 1
-	botrow = [skip * i for i in range(cols)]
+	botrow = [operations["insertion"] * i for i in range(cols)]
 	row = 0
 
 	# fill out rows
 	for row in range(1,rows):
 		toprow = botrow
-		botrow = [row * skip] + [0]*(cols-1) # pre-allocate the list
-		for col in range(1,cols):
+		botrow = [row * operations["deletion"]] + [0]*(cols-1) # pre-allocate row
+		for col in range(1, cols):
 
-			# get scores
-			match_score = matching(str1[row-1], str2[col-1]) + toprow[col-1]
-			skip_str1 = skip + toprow[col]
-			skip_str2 = skip + botrow[col-1]
+			# compute scores for each operation
+			scores = []
+			if "deletion" in operations:
+				score = toprow[col] + operations["deletion"]
+				scores.append(score)
+			if "insertion" in operations:
+				score = botrow[col-1] + operations["insertion"]
+				scores.append(score)
+			if "transform" in operations and str1[row-1] != str2[col-1]:
+				score = toprow[col-1] + operations["transform"]
+				scores.append(score)
+			if "skip" in operations and str1[row-1] == str2[col-1]:
+				score = toprow[col-1] + operations["skip"]
+				scores.append(score)
 
-			# take largest
-			botrow[col] = max(match_score, skip_str1, skip_str2)
+			# get appropriate score
+			if minimise:
+				score = min(scores)
+			else:
+				score = max(scores)
+			botrow[col] = score
 
-	# return last element in bottom row
 	return botrow[-1]
-
 
 def alignment(str1, str2, match=1, mismatch=-1, skip=-2, case_sensitive=False, pad_character="_"):
 	'''
