@@ -31,7 +31,7 @@ def levenshtein(string1, string2, case_sensitive=False,
 		"skip" : skip,
 		"transform " : transform
 	}
-	return edit_dist(str1, str2, operations, case_sensitive, minimise=True)
+	return edit_dist(string1, string2, operations, case_sensitive, minimise=True)
 
 def seq_align(str1, str2, case_sensitive=False,
 			  match=1, mismatch=-1, skip=-2):
