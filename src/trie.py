@@ -117,10 +117,10 @@ class Trie:
     	else:
     		return False
     
-    def contains_substr_of(self,string):
+    def contains_substr_of(self, string):
     	'''
     	Check if any word in this Trie is a substring of the given string.
-    	Returns bool.
+    	Return bool : whether the Trie contained any substring of the given string.
 
     	Parameters:
     	-----------
