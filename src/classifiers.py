@@ -164,67 +164,6 @@ class CompositeMatcher(AbstractMatcher):
 
 
 
-class LanguageClassifier(AbstractClassifier):
-
-	__categories__ = {}
-
-	def __init__(self, matchers={}):
-		if not isinstance(matchers, dict):
-			raise TypeError("Must pass dict to the matchers arg of LanguageClassifier, but was passed", type(matchers))
-		for matcher in matchers.values():
-			if not isinstance(matcher, AbstractMatcher):
-				raise TypeError("matchers arg of LanguageClassifier must be mapping of keys to AbstractMacther, but you passed a ", type(matcher))
-		self.__categories__ = matchers
-
-	def classify_words(self, words, probabilities=False):
-
-		if not isinstance(probabilities, bool):
-			raise TypeError("LanguageClassifier.classify_words arg probabilities must be True or False")
-
-		if isinstance(words, str):
-			strings = [words]
-		elif isinstance(words, Iterable):
-			strings = words
-		else:
-			raise TypeError("LanguageClassifier can only classify str or Itreable but was asked to classify ", type(strings))
-
-		wordmapping = {}
-		for word in strings:
-			probs = self.__getfmap__(word)
-			if not probabilities:
-				mostlikely = self.__getmostlikely__(probs)
-				wordmapping[word] = mostlikely
-			else:
-				wordmapping[word] = probs
-
-		if isinstance(words, str):
-			return wordmapping[words]
-		else:
-			return wordmapping
-
-	def __getfmap__(self, string):
-		'''
-		Take a single string, return {"Maori" : 0.7, "English" : 0.4"}
-		'''
-		results = {}
-		for category in self.__categories__:
-			matcher = self.__categories__[category]
-			result = matcher.match_probability(string)
-			results[category] = result
-		return results
-
-	def __getmostlikely__(self, probability_map):
-		'''
-			Take {"Maori" : 0.7, "English" : 0.4} and return ("Maori", 0.7)
-		'''
-		mostlikely = None
-		for category in probability_map:
-			pct = probability_map[category]
-			if mostlikely == None or pct > mostlikely[1]:
-				mostlikely = (category, pct)
-		return mostlikely
-
-
 
 
 class LengthMatcher(AbstractMatcher):
@@ -276,3 +215,145 @@ class LengthMatcher(AbstractMatcher):
 
 	def get_range(self):
 		return (__minlength__,__maxlength__)
+
+
+
+
+
+
+
+
+
+
+class LanguageClassifier(AbstractClassifier):
+
+	__categories__ = {}
+
+	def __init__(self, matchers={}):
+		if not isinstance(matchers, dict):
+			raise TypeError("Must pass dict to the matchers arg of LanguageClassifier, but was passed", type(matchers))
+		for matcher in matchers.values():
+			if not isinstance(matcher, AbstractMatcher):
+				raise TypeError("matchers arg of LanguageClassifier must be mapping of keys to AbstractMacther, but you passed a ", type(matcher))
+		self.__categories__ = matchers
+
+	def classify_text(self, text, all_classifications=False):
+		'''
+		Given a string of text, return the category that best fits this text.
+
+		Parameters
+		----------
+		text : str
+			the text to classify. Assumed to be space-delimited
+		all_classifications : bool
+			if True, return the most likely classification and how likely they fit e.g.: ("Maori", 0.4)
+			if False, return all classifications and how likely they fit e.g.: {"Maori" : 0.4, "English" : 0.2}
+		
+		Return
+		------
+		all_classifications == True
+			return: { "Maori" : 0.6, "English" : 0.3 }
+		all_classifications == False
+			return: ("Maori", 0.6)
+		'''
+
+		# split by spaces, get scores for each word
+		text = text.split(" ")
+		word_categorisations = self.classify_words(text, all_classifications=True)
+
+		# aggregate scores across all words
+		# e.g.: { "korero" : {"Maori" : 0.6, "English" : 0.2}, "whakapapa" : {"Maori" : 0.7, "English" : 0.4}}
+		#           will return {"Maori" : 1.3 : "English" : 0.6} 
+		categories = {}
+		for word in word_categorisations:
+			classification_scores = word_categorisations[word]
+			for category in classification_scores:
+				fit = classification_scores[category]
+				if category not in categories:
+					categories[category] = 0.0
+				categories[category] = categories[category] + fit
+
+		# norm the aggregated scores
+		num_words = len(word_categorisations)
+		for category in categories:
+			categories[category] = categories[category] / num_words
+
+		# return
+		if all_classifications:
+			return categories
+		else:
+			return self.__getmostlikely__(categories)
+
+	def classify_words(self, words, all_classifications=False):
+		'''
+		Given one or more words, return the category which best fits.
+		Return: depends on parameters.
+
+		Parameters
+		----------
+		words : str or Iterable
+			the words you want to classify.
+		all_classifications : bool
+			whether you want to return the fit for all categories (True) or just the fit for the most likely category
+
+		Return
+		------
+		type(words) == str and all_classifications == True
+			return: {"English" : 0.3, "Maori" : 0.6}
+		type(words) == str and all_classifications == False
+			return ("Maori", 0.6)
+		type(words) == Iterable and all_classifications == True
+			return: {"korero" : {"English" : 0.2, "Maori" : 0.5}, "whakapapa" : {"English" : 0.4 , "Maori" : 0.7}}
+		type(words) == Iterable and all_classifications == False
+			return: {"korero" : ("Maori", 0.5), "whakapapa" : ("Maori", 0.7)} 
+		'''
+
+		if not isinstance(all_classifications, bool):
+			raise TypeError("LanguageClassifier.classify_words arg all_classifications must be True or False")
+
+		if isinstance(words, str):
+			strings = [words]
+		elif isinstance(words, Iterable):
+			strings = words
+		else:
+			raise TypeError("LanguageClassifier can only classify str or Itreable but was asked to classify ", type(strings))
+
+		wordmapping = {}
+		for word in strings:
+			probs = self.__getfmap__(word)
+			if not all_classifications:
+				mostlikely = self.__getmostlikely__(probs)
+				wordmapping[word] = mostlikely
+			else:
+				wordmapping[word] = probs
+
+		if isinstance(words, str):
+			return wordmapping[words]
+		else:
+			return wordmapping
+
+	def __getfmap__(self, string):
+		'''
+		Take a single string, return mapping of categories to score.
+		E.g.: __getfmap__(word) ---> {"Maori" : 0.6, English : "0.2"}}}
+		Take a single string, return {"Maori" : 0.7, "English" : 0.4"}
+		'''
+		results = {}
+		for category in self.__categories__:
+			matcher = self.__categories__[category]
+			result = matcher.match_probability(string)
+			results[category] = result
+		return results
+
+	def __getmostlikely__(self, probability_map):
+		'''
+		Take a mapping of categories and return the most likely category.
+		E.g.: __getmostlikely__({"Maori" : 0.7, "English" : 0.4}) --> ("Maori", 0.7)
+		'''
+		mostlikely = None
+		for category in probability_map:
+			pct = probability_map[category]
+			if mostlikely == None or pct > mostlikely[1]:
+				mostlikely = (category, pct)
+		return mostlikely
+

@@ -1,8 +1,11 @@
 import inspect
 import sys
+import os
 
-from language import LanguageClassifier
-from charfreq import CorpusMatcher
+here = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.normpath(os.path.join(here, "../src")))
+
+from classifiers import *
 
 def assertion(assertion, correct_msg, failure_msg):
 	if assertion:
@@ -13,12 +16,12 @@ def assertion(assertion, correct_msg, failure_msg):
 		return False
 
 def maori_matcher():
-	with open("maori-corpus.txt", "r") as f:
+	with open("../corpora/maori-corpus.txt", "r") as f:
 		corpus = [line.rstrip() for line in f]
 		return CorpusMatcher(0.5, trainingSet=corpus)
 
 def english_matcher():
-	with open("english-corpus.txt", "r") as f:
+	with open("../corpora/english-corpus.txt", "r") as f:
 		corpus = [line.rstrip() for line in f]
 		return CorpusMatcher(0.5, trainingSet=corpus)
 
@@ -66,4 +69,3 @@ def main():
 	
 if __name__ == "__main__":
 	main()
-

@@ -1,6 +1,11 @@
-import strmetric
 import inspect
 import sys
+import os
+
+here = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.normpath(os.path.join(here, "../src")))
+
+from ling import *
 
 def assertion(assertion, correct_msg, failure_msg):
 	if assertion:
@@ -13,7 +18,7 @@ def assertion(assertion, correct_msg, failure_msg):
 def test_seq_score_1():
 	s1 = "john"
 	s2 = "ohm"
-	ans = strmetric.seq_align(s1, s2)
+	ans = seq_align(s1, s2)
 	correct_ans = -1
 	return assertion(ans==correct_ans,
 		"Passed seq_score_1",
@@ -21,14 +26,14 @@ def test_seq_score_1():
 
 def test_seq_score_2():
 	s1 = "john"
-	ans = strmetric.seq_align(s1, s1)
+	ans = seq_align(s1, s1)
 	return assertion(ans==4,
 		"Passed seq_score_2",
 		"Failed seq_score_2: got " + str(ans) + " but should have been 4")
 
 def test_seq_score_3():
 	s1 = "john"
-	ans = strmetric.seq_align(s1, s1)
+	ans = seq_align(s1, s1)
 	return assertion(ans==4,
 		"Passed seq_score_3",
 		"Failed seq_score_3: got " + str(ans) + " but should have been 4")
@@ -36,7 +41,7 @@ def test_seq_score_3():
 def test_seq_score_4():
 	s1 = "john"
 	s2=  "John"
-	ans = strmetric.seq_align(s1, s2, case_sensitive=True)
+	ans = seq_align(s1, s2, case_sensitive=True)
 	return assertion(ans==2,
 		"Passed seq_score_4",
 		"Failed seq_score_4: got " + str(ans) + " but should have been 2")
@@ -44,7 +49,7 @@ def test_seq_score_4():
 def test_seq_score_5():
 	s1 = "john"
 	s2 = "ohm"
-	ans = strmetric.seq_align(s1, s2, match=4, mismatch=-5, skip=-10)
+	ans = seq_align(s1, s2, match=4, mismatch=-5, skip=-10)
 	correct_ans = -7
 	return assertion(ans==correct_ans,
 		"Passed seq_score_5",
@@ -53,7 +58,7 @@ def test_seq_score_5():
 def test_seq_score_6():
 	s1 = "john"
 	s2 = "JoHn"
-	ans = strmetric.seq_align(s1, s2, match=2, mismatch=-3, skip=-5, case_sensitive=True)
+	ans = seq_align(s1, s2, match=2, mismatch=-3, skip=-5, case_sensitive=True)
 	correct_ans = - 3 + 2 - 3 + 2
 	return assertion(ans==correct_ans,
 		"Passed seq_score_6",
@@ -62,7 +67,7 @@ def test_seq_score_6():
 def test_seq_align_1():
 	s1 = "john"
 	s2 = "ohm"
-	align = strmetric.alignment(s1, s2)
+	align = alignment(s1, s2)
 	correct_ans = ("john","_ohm")
 	return assertion(align == correct_ans,
 		"Passed seq_align_1",
@@ -71,7 +76,7 @@ def test_seq_align_1():
 def test_seq_align_2():
 	s1 = "john"
 	s2 = "ohm"
-	align = strmetric.alignment(s1, s2, pad_character="&")
+	align = alignment(s1, s2, pad_character="&")
 	correct_ans = ("john", "&ohm")
 	return assertion(align == correct_ans,
 		"Passed seq_align_2",
