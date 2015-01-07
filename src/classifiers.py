@@ -5,6 +5,9 @@ import numbers as __numbers__
 
 
 class AbstractClassifier():
+'''
+AbstractClassifiers are anything capable of taking a string, or a text of strings, and returning the category that it belongs to.
+'''
 
 	__categories__ = {}
 
@@ -15,6 +18,13 @@ class AbstractClassifier():
 		raise NotImplementedError()
 
 class AbstractMatcher():
+'''
+AbstractMatchers are anything which are capable of taking a string, or a text of strings, and returning "yes" or "no". They may be used to confirm or deny that strings
+belong to certain categories.
+
+Matchers can also be inverted. When an AbstractMatcher is inverted, if a string ordinarily would return "yes", it will now return "no", so you can get the logical
+complement of any matched sets.
+'''
 
 	__inverted__ = False
 
@@ -34,6 +44,19 @@ class AbstractMatcher():
 
 
 class CorpusMatcher(AbstractMatcher):
+'''
+CorpusMatcher will match strings based on their likeness to a corpus of words. It does this by counting the frequency that one character will follow another in a
+specified corpus and use this to figure out the probability that any arbitrary string matches the corpus of words. It can also match "true" or "false" depending on
+your specification of a threshold.
+
+Parameters
+----------
+	threshold : float between 0.0 and 1.0
+		how probable a string's inclusion has to be before it is matched. For example, if threshold is 0.6, a string is considered matched if the probability of it
+		being part of the corpus is 60% or greater
+	trainingSet : Iterable
+		a collection of strings. Their character frequencies will be uesd as the basis for CorpusMatcher's probability matching.
+'''
 
 	def __init__(self, threshold, trainingSet=[]):
 		if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
@@ -127,6 +150,19 @@ class CorpusMatcher(AbstractMatcher):
 
 
 class CompositeMatcher(AbstractMatcher):
+'''
+CompositeMatcher is a collection of matchers. It will match strings depending on the underlying matchers and a logical connective passed to its constructor.
+It can also match by probability, if the underlying matchers are capable of matching by probability.
+
+Parameters
+----------
+	matchers : Iterable
+		a collection of matchers
+	type : "or" or "and"
+		logic for how to match strings.
+		"or" : a string is matched when any of the underlying matchers returns True
+		"and" : a string is matched when all of the underlying matchers return True
+'''
 
 	def __init__(self, matchers, type="or"):
 		if not isinstance(matchers, Iterable):
@@ -139,6 +175,9 @@ class CompositeMatcher(AbstractMatcher):
 		self.__type__ = type
 
 	def __matchone__(self, string):
+		'''
+		Helper method. Matches one string.
+		'''
 		results = [cl.match(string) for cl in self.__matchers__]
 		if self.__type__ == "or":
 			reduction = lambda x,y : x or y
@@ -167,6 +206,13 @@ class CompositeMatcher(AbstractMatcher):
 
 
 class LengthMatcher(AbstractMatcher):
+'''
+LengthMatcher is able to match strings depending on their size. When you have created a LengthMatcher you must set its parameters using either:
+	- LengthMatcher.stdev
+	- LengthMatcher.stdev_from_words
+	- LengthMatcher.range
+LengthMatcher will give "yes" if a string's length falls in the range of acceptable values set using the above methods.
+'''
 
 	__minlength__ = None
 	__maxlength__ = None
@@ -190,12 +236,36 @@ class LengthMatcher(AbstractMatcher):
 			raise TypeError("LengthMatcher can only classify Strings and Iterables.") 
 
 	def stdev(self, mean, stdev, acceptable_stdevs):
+		'''
+		Set this LengthMatcher to match based on a mean string length with given standard deviation.
+
+		Parameters
+		----------
+			mean : Number
+				the average length for a string
+			stdev : Number
+				the average standard deviation for a string
+			acceptable_stdevs : int
+				how many standard deviations a string length can be from the mean before it is no longer matched.
+		'''
 		if not isinstance(stdev, __numbers__.Number) or not isinstance(acceptable_stdevs, __numbers__.Number):
 			raise TypeError("Must pass numbers to arguments minlength and maxlength. You passed: ("+str(type(minlength))+","+str(type(maxlength))+")")
 		self.__minlength__ = mean - stdev * acceptable_stdevs
 		self.__maxlength__ = mean + stdev * acceptable_stdevs
 
 	def stdev_from_words(self, words, acceptable_stdevs):
+		'''
+		Set this LengthMatcher to match based on a mean string length with given standard deviation.
+		If you don't know the mean or the standard deviation, this method will figure it out for you and set things up accordingly.
+
+		Parameters
+		----------
+			words : Iterable
+				a colleciton of strings, from whose lengths the mean and standard deviation will be inferred
+			acceptable_stdevs : int
+				how many standard deviations a string length can be from the mean before it is no longer matched.
+		'''
+
 		if not isinstance(words, Iterable):
 			raise TypeError("stdev_from_words requires an Iterable. You passed: "+str(type(words)))
 
@@ -207,6 +277,16 @@ class LengthMatcher(AbstractMatcher):
 		self.stdev(length_mean, length_stdev, acceptable_stdevs)
 
 	def range(self, minlength, maxlength):
+		'''
+		Set this LengthMatcher to match based on whether a string's length falls within the specified range.
+
+		Parameters
+		----------
+			minlength : Number
+				minimum acceptable length for a String, inclusive.
+			maxlength : Number
+				maximum acceptable length for a String, exclusive.
+		'''
 		if not isinstance(minlength, __numbers__.Number) or (not isinstance(maxlength, __numbers__.Number) and maxlength!="infinity"):
 			raise TypeError("Must pass numbers to arguments minlength and maxlength. You passed: ("+str(type(minlength))+","+str(type(maxlength))+")")
 		self.__minlength__ = minlength
@@ -226,6 +306,15 @@ class LengthMatcher(AbstractMatcher):
 
 
 class LanguageClassifier(AbstractClassifier):
+'''
+Classifies text or strings as being of a certain language category, based on the matchers you instantiate it with.
+
+Parameters
+----------
+	matchers : {str -> AbstractMatcher}
+		a dict of matchers. The key is the name of the matcher. For example, you might have: {"Maori" : aMaoriMatcher, "English" : anEnglishMatcher}
+		and this LanguageClassifier would be capable of classifying text as either English or Maori, based on the given matchers.
+'''
 
 	__categories__ = {}
 
