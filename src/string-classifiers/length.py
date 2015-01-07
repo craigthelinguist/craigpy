@@ -3,7 +3,7 @@ import numbers as __numbers__
 from collections import Iterable
 from abstract import * 
 
-class LengthClassifier(AbstractClassifier):
+class LengthMatcher(AbstractMatcher):
 
 	__minlength__ = None
 	__maxlength__ = None
@@ -16,7 +16,7 @@ class LengthClassifier(AbstractClassifier):
 		elif self.__maxlength__:
 			return (len(word) <= self.__maxlength__) != self.__inverted__
 		else:
-			raise NotImplementedError("LengthClassifier must be set up with LengthClassifier.stdev or LengthClassifier.range")
+			raise NotImplementedError("LengthMatcher must be set up with LengthMatcher.stdev or LengthMatcher.range")
 
 	def match(self, words, returntype="list"):
 		if isinstance(words, str):
@@ -24,7 +24,7 @@ class LengthClassifier(AbstractClassifier):
 		elif isinstance(words, Iterable):
 			return [word for word in words if __matchone__(word)]
 		else:
-			raise TypeError("LengthClassifier can only classify Strings and Iterables.") 
+			raise TypeError("LengthMatcher can only classify Strings and Iterables.") 
 
 	def stdev(self, mean, stdev, acceptable_stdevs):
 		if not isinstance(stdev, __numbers__.Number) or not isinstance(acceptable_stdevs, __numbers__.Number):

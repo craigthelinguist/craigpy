@@ -77,10 +77,12 @@ def test_seq_align_2():
 		"Passed seq_align_2",
 		"Failed seq_align_1: got " + str(align) + " but should have been " + str(correct_ans))
 
+ 
 def main():
-	print("Running tests....")
 	print("=================")
-	tests = [obj for name,obj in inspect.getmembers(sys.modules[__name__]) if (inspect.isfunction(obj) and name.startswith("test_"))]
+	print("Running tests....")
+	print()
+	tests = [obj for name,obj in inspect.getmembers(sys.modules[__name__]) if (inspect.isfunction(obj) and name.startswith("test"))]
 	sortkey = lambda x : str(x)
 	tests.sort(key=sortkey)
 	count = 0
@@ -88,9 +90,10 @@ def main():
 		if test():
 			count = count + 1
 	pct = 1.0 * count / len(tests) * 100
-	print("================")
+	print()
 	print("Finished.")
 	print("Passed: " + str(count) + "/" + str(len(tests)) + " ("+str(pct)+"%)")
-
+	print("================")
+	
 if __name__ == "__main__":
 	main()
