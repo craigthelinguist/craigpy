@@ -85,7 +85,7 @@ def test_seq_align_2():
 def test_jaccard_1():
 	s1 = "ab"
 	s2 = "ab"
-	index = jaccard(s1,s2,"unigram")
+	index = jaccard(s1,s2,1)
 	correct_ans = 1.0
 	return assertion(index == correct_ans,
 		"Passed jaccard_1",
@@ -94,7 +94,7 @@ def test_jaccard_1():
 def test_jaccard_2():
 	s1 = "ab"
 	s2 = "ab"
-	index = jaccard(s1,s2,"bigram")
+	index = jaccard(s1,s2,2)
 	correct_ans = 1.0
 	return assertion(index == correct_ans,
 		"Passed jaccard_2",
@@ -103,17 +103,8 @@ def test_jaccard_2():
 def test_jaccard_3():
 	s1 = "abcd"
 	s2 = "efgh"
-	index = jaccard(s1,s2,"unigram")
+	index = jaccard(s1,s2,1)
 	correct_ans = 0.0
-	return assertion(index == correct_ans,
-		"Passed jaccard_3",
-		"Failed jaccard_3: got " + str(index) + " but should have been " + str(correct_ans))
-
-def test_jaccard_3():
-	s1 = "abcd"
-	s2 = "abba"
-	index = jaccard(s1,s2,"unigram")
-	correct_ans = 0.5
 	return assertion(index == correct_ans,
 		"Passed jaccard_3",
 		"Failed jaccard_3: got " + str(index) + " but should have been " + str(correct_ans))
@@ -121,19 +112,60 @@ def test_jaccard_3():
 def test_jaccard_4():
 	s1 = "abcd"
 	s2 = "abba"
-	index = jaccard(s1,s2,"bigram")
+	index = jaccard(s1,s2,1)
+	correct_ans = 0.5
+	return assertion(index == correct_ans,
+		"Passed jaccard_3",
+		"Failed jaccard_3: got " + str(index) + " but should have been " + str(correct_ans))
+
+def test_jaccard_5():
+	s1 = "abcd"
+	s2 = "abba"
+	index = jaccard(s1,s2,2)
 	correct_ans = 0.2
 	return assertion(index == correct_ans,
 		"Passed jaccard_4",
 		"Failed jaccard_4: got " + str(index) + " but should have been " + str(correct_ans))
 
-def test_jaccard_5():
+def test_jaccard_6():
 	s1 = ""
-	index = jaccard(s1,s1,"unigram")
+	index = jaccard(s1,s1,1)
 	correct_ans = 1.0
 	return assertion(index == correct_ans,
 		"Passed jaccard_5",
 		"Failed jaccard_5: got " + str(index) + " but should have been " + str(correct_ans))
+
+def test_ngram_1():
+	s1 = "hello"
+	ngram = ngram_frequency(s1, 1)
+	claim = ngram["h"] == 1 and ngram["e"] == 1 and ngram["l"] == 2 and ngram["o"] == 1
+	return assertion(claim,
+		"Passed ngram_1",
+		"Failed ngram_1: frequency count of 1-grams was wrong")
+
+def test_ngram_2():
+	s1 = "hellenes"
+	ngram = ngram_frequency(s1, 2)
+	claim = ngram["he"] == 1 and ngram["el"] == 1 and ngram["ll"] == 1 and ngram["le"] == 1 and ngram["en"] == 1 and ngram["ne"] == 1 and ngram["es"] == 1
+	return assertion(claim,
+		"Passed ngram_2",
+		"Failed ngram_2: frequency count of 2-grams was wrong")
+
+def test_ngram_3():
+	s1 = "billy"
+	ngram = ngram_set(s1, 1)
+	claim = "b" in ngram and "i" in ngram and "l" in ngram and "y" in ngram and len(ngram) == 4
+	return assertion(claim,
+		"Passed ngram_3",
+		"Failed ngram_3: returned set was wrong")
+
+def test_ngram_4():
+	s1 = "clarissa"
+	ngram = ngram_set(s1, 2)
+	claim = "cl" in ngram and "la" in ngram and "ar" in ngram and "ri" in ngram and "is" in ngram and "ss" in ngram and "sa" in ngram and len(ngram) == 7
+	return assertion(claim,
+		"Passed ngram_4",
+		"Failed ngram_4: frequency count of 2-grams was wrong")
 
 def main():
 	print("=================")

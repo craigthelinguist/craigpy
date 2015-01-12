@@ -1,5 +1,4 @@
 
-from collections import Iterable
 import math as __math__
 
 def levenshtein(string1, string2, case_sensitive=False,
@@ -242,67 +241,66 @@ def alignment(str1, str2, match=1, mismatch=-1, skip=-2, case_sensitive=False, p
 	align2 = align2[::-1]
 	return (align1, align2)
 
-def distribution(string, measure, probability=False):
+def ngram_frequency(string, degree, normed=False):
 	'''
-	Compute the frequency distribution of a string by the given measure.
-	Return: dict of str -> int, or str-> float if probability=True
+	Compute the ngram frequency of the given string.
+	Return: dict of str -> int, mapping each n-gram to its count.
 
 	Parameters
 	----------
 	string : str
-		string whose distribution you will measure
-	measure : "unigram" or "bigram"
-		whether to compute distribution by chars or pairs of chars
+		string whose ngram frequency you will count
+	degree : int
+		the degree of the ngram (1-grams, 2-grams, etc.)
 
 	Keyword Arguments
 	-----------------
-	probability : bool
-		if true, return the probability of each character rather than the count
+	normed : bool
+		if false, return a dict of str -> count, if true, return a dict of str -> probability
 	'''
+
+	if degree < 1:
+		raise TypeError("Degree of n-gram frequency must be 1 or greater")
+	elif degree > len(string):
+		return {}
 	dist = {}
-	if measure == "unigram":
-		for char in string:
-			if char not in dist:
-				dist[char] = 0
-			dist[char] = dist[char] + 1
-	elif measure == "bigram":
-		for i in range(0, len(string)-1):
-			bigram = string[i] + string[i+1]
-			if bigram not in dist:
-				dist[bigram] = 0
-			dist[bigram] = dist[bigram] + 1
-	else:
-		raise TypeError("Unknown measure for string distribution: ", measure)
-	
-	if probability:
+	for i in range(len(string) - degree + 1):
+		s = ""
+		for j in range(i,i+degree):
+			s = s + string[j]
+		if s not in dist:
+			dist[s] = 0
+		dist[s] = dist[s] + 1
+	if normed:
 		total = len(string)
 		for key in dist:
 			dist[key] = 1.0 * dist[key] / total
 	return dist
 
-def unique_characters(string, measure):
+def ngram_set(string, degree):
 	'''
-	Return the set of unique characters in a string by the given measure.
+	Return the set of unique n-grams in the given string.
 
 	Parameters
 	----------
 	string : str
-		string whose unique characters you want
-	measure : "unigram" or "bigram"
-		whether to consider characters in isolation or as pairs
+		string to check
+	degree : int
+		degree of n-grams to check
 	'''
-	if measure == "unigram":
-		distribution = set([char for char in string])
-	elif measure == "bigram":
-		distribution = set([])
-		for i in range(0, len(string)-1):
-			bigram = string[i] + string[i+1]
-			distribution.add(bigram)
-	else:
-		raise TypeError("Unknown measure for string's unique characters ", measure)
-	return distribution
+	if degree < 1:
+		raise TypeError("Degree of n-gram set must be 1 or greater")
+	elif degree > len(string):
+		return set([])
+	ngrams = set([])
+	for i in range(len(string) - degree + 1):
+		s = ""
+		for j in range(i, i+degree):
+			s = s + string[j]
+		ngrams.add(s)
+	return ngrams
 
-def jaccard(string1, string2, measure="bigram"):
+def jaccard(string1, string2, ngram_degree=2):
 	'''
 	Compute the Jaccard index between two strings.
 
@@ -315,63 +313,33 @@ def jaccard(string1, string2, measure="bigram"):
 
 	Keyword Arguments
 	-----------------
-	measure : "bigram" or "unigram"
-		whether to compare single characters or pairs of characters.
+	ngram_degree : int
+		whether to compare unigrams, bigrams, etc.
+		default = 2 (compare bigrams)
+		should be a positive number
 	'''
-	dist1 = unique_characters(string1, measure)
-	dist2 = unique_characters(string2, measure)
+	dist1 = ngram_set(string1, ngram_degree)
+	dist2 = ngram_set(string2, ngram_degree)
 	intersection = 1.0 * len(dist1.intersection(dist2))
 	union = 1.0 * len(dist1.union(dist2))
 	return 1 if union == 0 else intersection / union
 
-def kullback_leibler(string1, string2, measure="bigram", alphabet="alphanumeric", case_sensitive=False):
+def kullback_leibler(dist1, dist2, ngram_degree, alphabet):
 	'''
-	Compute the Kullback-Leibler divergence from string1 to string2.
+	Compute the Kullback-Leibler divergence from dist1 to dist2.
 
 	Parameters
 	----------
-	string1 : str
-		first string
-	string2 : str
-		second string
-
-	Keyword Arguments
-	-----------------
-	measure : "bigram" or "unigram"
-		whether to compare single characters or pairs of characters
-	alphabet : "alpha", "numeric", "alphanumeric", or Iterable
-		the alphabet of possible characters in those strings
-	case_sensitive : bool
-		false: ignore case sensitivity. true: consider it.
+	dist1, dist2 : { str : float }
+		frequency distributions to be compared. should map each observation to its probability
+	alphabet : Iterable
+		all possible values that the observations in the distributions could have taken on.
+		for example, if you're comparing strings by their bigrams, this should be every possble bigram.
 	'''
-
-	# construct alphabet
-	numbers = ["1","2","3","4","5","6","7","8","9","0"]
-	chars = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","o","p","q","r"
-			 "s","t","u","v","w","x","y","z"]
-	if alphabet == "alpha":
-		alphabet = chars
-	elif alphabet == "numberic":
-		alphabet = numbers
-	elif alphabet == "alphanumeric":
-		alphabet = chars + numbers
-	elif not isinstance(alphabet, Iterable):
-		raise TypeError("alphabet keyword arg must be 'alpha', 'numeric', 'alphanumeric', or an iterable collection of strings.")
-
-	# deal with case sensitivity
-	if case_sensitive:
-		alphabet = [x.lower() for x in alphabet] + [x.upper() for x in alphabet]
-	else:
-		alphabet = [x.lower() for x in alphabet]
-
-	# compute frequency distributions
-	dist1 = distribution(string1, measure, probability=True)
-	dist2 = distribution(string2, measure, probability=True)
-
-	# compute divergence
+	alphabet = [x.lower() for x in alphabet]
 	divergence = 0
-	for char in alphabet:
-		f1 = dist1[char]
-		f2 = dist2[char]
+	for ngram in alphabet:
+		f1 = dist1[ngram]
+		f2 = dist2[ngram]
 		divergence = divergence + f1 * __math__.log(1.0 * f1 / f2)
 	return divergence
