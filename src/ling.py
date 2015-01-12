@@ -1,4 +1,7 @@
 
+from collections import Iterable
+import math as __math__
+
 def levenshtein(string1, string2, case_sensitive=False,
 				insertion=1, deletion=1, skip=0, transform=1):
 	'''
@@ -239,9 +242,10 @@ def alignment(str1, str2, match=1, mismatch=-1, skip=-2, case_sensitive=False, p
 	align2 = align2[::-1]
 	return (align1, align2)
 
-def __distribution__(string, measure):
+def distribution(string, measure, probability=False):
 	'''
 	Compute the frequency distribution of a string by the given measure.
+	Return: dict of str -> int, or str-> float if probability=True
 
 	Parameters
 	----------
@@ -249,6 +253,43 @@ def __distribution__(string, measure):
 		string whose distribution you will measure
 	measure : "unigram" or "bigram"
 		whether to compute distribution by chars or pairs of chars
+
+	Keyword Arguments
+	-----------------
+	probability : bool
+		if true, return the probability of each character rather than the count
+	'''
+	dist = {}
+	if measure == "unigram":
+		for char in string:
+			if char not in dist:
+				dist[char] = 0
+			dist[char] = dist[char] + 1
+	elif measure == "bigram":
+		for i in range(0, len(string)-1):
+			bigram = string[i] + string[i+1]
+			if bigram not in dist:
+				dist[bigram] = 0
+			dist[bigram] = dist[bigram] + 1
+	else:
+		raise TypeError("Unknown measure for string distribution: ", measure)
+	
+	if probability:
+		total = len(string)
+		for key in dist:
+			dist[key] = 1.0 * dist[key] / total
+	return dist
+
+def unique_characters(string, measure):
+	'''
+	Return the set of unique characters in a string by the given measure.
+
+	Parameters
+	----------
+	string : str
+		string whose unique characters you want
+	measure : "unigram" or "bigram"
+		whether to consider characters in isolation or as pairs
 	'''
 	if measure == "unigram":
 		distribution = set([char for char in string])
@@ -258,7 +299,7 @@ def __distribution__(string, measure):
 			bigram = string[i] + string[i+1]
 			distribution.add(bigram)
 	else:
-		raise TypeError("Unknown measure for string distribution: ", measure)
+		raise TypeError("Unknown measure for string's unique characters ", measure)
 	return distribution
 
 def jaccard(string1, string2, measure="bigram"):
@@ -277,8 +318,60 @@ def jaccard(string1, string2, measure="bigram"):
 	measure : "bigram" or "unigram"
 		whether to compare single characters or pairs of characters.
 	'''
-	dist1 = __distribution__(string1, measure)
-	dist2 = __distribution__(string2, measure)
+	dist1 = unique_characters(string1, measure)
+	dist2 = unique_characters(string2, measure)
 	intersection = 1.0 * len(dist1.intersection(dist2))
 	union = 1.0 * len(dist1.union(dist2))
 	return 1 if union == 0 else intersection / union
+
+def kullback_leibler(string1, string2, measure="bigram", alphabet="alphanumeric", case_sensitive=False):
+	'''
+	Compute the Kullback-Leibler divergence from string1 to string2.
+
+	Parameters
+	----------
+	string1 : str
+		first string
+	string2 : str
+		second string
+
+	Keyword Arguments
+	-----------------
+	measure : "bigram" or "unigram"
+		whether to compare single characters or pairs of characters
+	alphabet : "alpha", "numeric", "alphanumeric", or Iterable
+		the alphabet of possible characters in those strings
+	case_sensitive : bool
+		false: ignore case sensitivity. true: consider it.
+	'''
+
+	# construct alphabet
+	numbers = ["1","2","3","4","5","6","7","8","9","0"]
+	chars = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","o","p","q","r"
+			 "s","t","u","v","w","x","y","z"]
+	if alphabet == "alpha":
+		alphabet = chars
+	elif alphabet == "numberic":
+		alphabet = numbers
+	elif alphabet == "alphanumeric":
+		alhpabet = chars + numbers
+	elif not isinstance(alphabet, Iterable):
+		raise TypeError("alphabet keyword arg must be 'alpha', 'numeric', 'alphanumeric', or an iterable collection of strings.")
+
+	# deal with case sensitivity
+	if case_sensitive:
+		alphabet = [x.lower() for x in alphabet] + [x.upper() for x in alphabet]
+	else:
+		alphabet = [x.lower() for x in alphabet]
+
+	# compute frequency distributions
+	dist1 = distribution(string, measure, probability=True)
+	dist2 = distribution(string, measure, probability=True)
+
+	# compute divergence
+	divergence = 0
+	for char in alphabet:
+		f1 = dist1[char]
+		f2 = dist2[char]
+		divergence = divergence + f1 * math.log(1.0 * f1 / f2)
+	return divergence
