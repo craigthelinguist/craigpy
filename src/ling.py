@@ -238,3 +238,47 @@ def alignment(str1, str2, match=1, mismatch=-1, skip=-2, case_sensitive=False, p
 	align1 = align1[::-1]
 	align2 = align2[::-1]
 	return (align1, align2)
+
+def __distribution__(string, measure):
+	'''
+	Compute the frequency distribution of a string by the given measure.
+
+	Parameters
+	----------
+	string : str
+		string whose distribution you will measure
+	measure : "unigram" or "bigram"
+		whether to compute distribution by chars or pairs of chars
+	'''
+	if measure == "unigram":
+		distribution = set([char for char in string])
+	elif measure == "bigram":
+		distribution = set([])
+		for i in range(0, len(string)-1):
+			bigram = string[i] + string[i+1]
+			distribution.add(bigram)
+	else:
+		raise TypeError("Unknown measure for string distribution: ", measure)
+	return distribution
+
+def jaccard(string1, string2, measure="bigram"):
+	'''
+	Compute the Jaccard index between two strings.
+
+	Parameters
+	----------
+	string1 : str
+		first string to compare
+	string2 : str
+		second string to compare
+
+	Keyword Arguments
+	-----------------
+	measure : "bigram" or "unigram"
+		whether to compare single characters or pairs of characters.
+	'''
+	dist1 = __distribution__(string1, measure)
+	dist2 = __distribution__(string2, measure)
+	intersection = 1.0 * len(dist1.intersection(dist2))
+	union = 1.0 * len(dist1.union(dist2))
+	return 1 if union == 0 else intersection / union

@@ -82,7 +82,59 @@ def test_seq_align_2():
 		"Passed seq_align_2",
 		"Failed seq_align_1: got " + str(align) + " but should have been " + str(correct_ans))
 
- 
+def test_jaccard_1():
+	s1 = "ab"
+	s2 = "ab"
+	index = jaccard(s1,s2,"unigram")
+	correct_ans = 1.0
+	return assertion(index == correct_ans,
+		"Passed jaccard_1",
+		"Failed jaccard_1: got " + str(index) + " but should have been " + str(correct_ans))
+
+def test_jaccard_2():
+	s1 = "ab"
+	s2 = "ab"
+	index = jaccard(s1,s2,"bigram")
+	correct_ans = 1.0
+	return assertion(index == correct_ans,
+		"Passed jaccard_2",
+		"Failed jaccard_2: got " + str(index) + " but should have been " + str(correct_ans))
+
+def test_jaccard_3():
+	s1 = "abcd"
+	s2 = "efgh"
+	index = jaccard(s1,s2,"unigram")
+	correct_ans = 0.0
+	return assertion(index == correct_ans,
+		"Passed jaccard_3",
+		"Failed jaccard_3: got " + str(index) + " but should have been " + str(correct_ans))
+
+def test_jaccard_3():
+	s1 = "abcd"
+	s2 = "abba"
+	index = jaccard(s1,s2,"unigram")
+	correct_ans = 0.5
+	return assertion(index == correct_ans,
+		"Passed jaccard_3",
+		"Failed jaccard_3: got " + str(index) + " but should have been " + str(correct_ans))
+
+def test_jaccard_4():
+	s1 = "abcd"
+	s2 = "abba"
+	index = jaccard(s1,s2,"bigram")
+	correct_ans = 0.2
+	return assertion(index == correct_ans,
+		"Passed jaccard_4",
+		"Failed jaccard_4: got " + str(index) + " but should have been " + str(correct_ans))
+
+def test_jaccard_5():
+	s1 = ""
+	index = jaccard(s1,s1,"unigram")
+	correct_ans = 1.0
+	return assertion(index == correct_ans,
+		"Passed jaccard_5",
+		"Failed jaccard_5: got " + str(index) + " but should have been " + str(correct_ans))
+
 def main():
 	print("=================")
 	print("Running tests....")
