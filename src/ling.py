@@ -354,7 +354,7 @@ def kullback_leibler(string1, string2, measure="bigram", alphabet="alphanumeric"
 	elif alphabet == "numberic":
 		alphabet = numbers
 	elif alphabet == "alphanumeric":
-		alhpabet = chars + numbers
+		alphabet = chars + numbers
 	elif not isinstance(alphabet, Iterable):
 		raise TypeError("alphabet keyword arg must be 'alpha', 'numeric', 'alphanumeric', or an iterable collection of strings.")
 
@@ -365,13 +365,13 @@ def kullback_leibler(string1, string2, measure="bigram", alphabet="alphanumeric"
 		alphabet = [x.lower() for x in alphabet]
 
 	# compute frequency distributions
-	dist1 = distribution(string, measure, probability=True)
-	dist2 = distribution(string, measure, probability=True)
+	dist1 = distribution(string1, measure, probability=True)
+	dist2 = distribution(string2, measure, probability=True)
 
 	# compute divergence
 	divergence = 0
 	for char in alphabet:
 		f1 = dist1[char]
 		f2 = dist2[char]
-		divergence = divergence + f1 * math.log(1.0 * f1 / f2)
+		divergence = divergence + f1 * __math__.log(1.0 * f1 / f2)
 	return divergence
