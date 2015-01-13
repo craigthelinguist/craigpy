@@ -339,8 +339,8 @@ def kullback_leibler(dist1, dist2, ngram_degree, alphabet):
 	alphabet = [x.lower() for x in alphabet]
 	divergence = 0
 	for ngram in alphabet:
-		f1 = dist1[ngram]
-		f2 = dist2[ngram]
+		f1 = dist1[ngram] if ngram in dist1 else 0
+		f2 = dist2[ngram] if ngram in dist2 else 0
 		if f1 != 0 and f2 != 0:
 			divergence = divergence + f1 * __math__.log(1.0 * f1 / f2)
 	return divergence
