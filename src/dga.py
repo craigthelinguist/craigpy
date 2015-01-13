@@ -86,27 +86,7 @@ def strip_hld(domain):
 		stripped = stripped[:-1]
 	return ".".join(stripped)
 
-def KL_distance(test_domains, good_domains, botnet_domains, degree, alphabet="alphanumeric"):
-	'''
-	Perform the symmetric Kullback-Leibler divergence test on the given test domains.
-
-	Parameters
-	----------
-		test_domains : Iterable
-			collection of domains you want to test with Kullback-Leibler divergence
-		good_domains : Iterable
-			collection of domains known to be legitimate
-		botnet_domains : Iterable
-			collection of domains known to be algorithmically generated
-		degree : int
-			degree of n-grams to tests (e.g.: unigrams = 1, bigrams = 2)
-			should be a positive integer
-
-	Keyword Arguments
-	-----------------
-		alphabet : "alpha" or "numeric" or "alphanumeric"
-			possible chars
-	'''
+def get_alphabet(alphabet="alphanumeric", degree):
 
 	# create alphabet
 	chars = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
@@ -130,30 +110,37 @@ def KL_distance(test_domains, good_domains, botnet_domains, degree, alphabet="al
 	for i in range(degree-1):
 		ngrams = product(ngrams, alphabet)
 
-	# get distribution for a collection of words
-	def get_dist(words):
-		main_dist = {}
-		for string in words:
-			word_dist = ling.ngram_frequency(string, degree, True)
-			for key in word_dist:
-				if key not in main_dist:
-					main_dist[key] = 0
-				main_dist[key] = main_dist[key] + word_dist[key]
-		for key in main_dist:
-			main_dist[key] = 1.0 * main_dist[key] / len(words)
-		return main_dist
+	return ngrams
+
+def KL_test(test_distribution, good_distribution, botnet_distribution, degree, alphabet="alphanumeric"):
+	'''
+	Perform the symmetric Kullback-Leibler divergence test on the given test domains.
+	Return true if the test_distribution is closer to the botnet_distribution than to the good_distribution.
+
+	Parameters
+	----------
+		test_domains : Iterable
+			collection of domains you want to test with Kullback-Leibler divergence
+		good_domains : Iterable
+			collection of domains known to be legitimate
+		botnet_domains : Iterable
+			collection of domains known to be algorithmically generated
+		degree : int
+			degree of n-grams to tests (e.g.: unigrams = 1, bigrams = 2)
+			should be a positive integer
+
+	Keyword Arguments
+	-----------------
+		alphabet : "alpha" or "numeric" or "alphanumeric"
+			possible chars
+	'''
 
 	# get distributions for each collection
 	dist_good = get_dist(good_domains)
 	dist_botnet = get_dist(botnet_domains)
 	dist_test = get_dist(test_domains)
 
-	# a symmetric measure of distance
-	def symmetric_divergence(d1, d2):
-		return 0.5 * (ling.kullback_leibler(d1,d2,degree,alphabet) + ling.kullback_leibler(d2,d1,degree,alphabet))
-
 	# compare distance between test distribution and the good/bad distributions
-	d_qg = symmetric_divergence(dist_test, dist_good)
-	d_qb = symmetric_divergence(dist_test, dist_botnet)
-	result = d_qg - d_qb
-	return result > 0
+	d_qg = ling.kullback_leibler_distance(dist_test, dist_good, degree, alphabet)
+	d_qb = ling.kullback_leibler_distance(dist_test, dist_botnet, degree, alphabet)
+	return d_qg > d_qb

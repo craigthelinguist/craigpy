@@ -1,4 +1,5 @@
 
+import decimal
 import math as __math__
 
 def levenshtein(string1, string2, case_sensitive=False,
@@ -344,3 +345,9 @@ def kullback_leibler(dist1, dist2, ngram_degree, alphabet):
 		if f1 != 0 and f2 != 0:
 			divergence = divergence + f1 * __math__.log(1.0 * f1 / f2)
 	return divergence
+
+def kullback_leibler_distance(dist1, dist2, ngram_degree, alphabet):
+	'''
+	Compute Kullback-Leibler distance from dist1 to dist2.
+	'''
+	return 0.5 * (kullback_leibler(dist1, dist2, ngram_degree, alphabet) + kullback_leibler(dist1, dist2, ngram_degree, alphabet))
