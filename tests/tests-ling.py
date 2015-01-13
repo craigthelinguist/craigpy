@@ -167,6 +167,39 @@ def test_ngram_4():
 		"Passed ngram_4",
 		"Failed ngram_4: frequency count of 2-grams was wrong")
 
+def test_ngram_5():
+	s1 = "johnny"
+	ngram = ngram_frequency(s1, 1)
+	claim = ngram["j"] == 1 and ngram["o"] == 1 and ngram["h"] == 1 and ngram["n"] == 2 and ngram["y"] == 1 and len(ngram) == 5
+	return assertion(claim,
+		"Passed ngram_5",
+		"Failed ngram_5: frequency count was" + str(ngram))
+
+def test_ngram_6():
+	s1 = "johnny"
+	ngram = ngram_frequency(s1, 2)
+	claim = ngram["jo"]==1 and ngram["oh"]==1 and ngram["hn"]==1 and ngram["nn"]==1 and ngram["ny"]==1 and len(ngram)==5
+	return assertion(claim,
+		"Passed ngram_6",
+		"Failed ngram_6: frequency count was " + str(ngram))
+
+def test_ngram_7():
+	s1 = "john"
+	ngram = ngram_frequency(s1, 1, normed=True)
+	claim = ngram["j"]==0.25 and ngram["o"]==0.25 and ngram["h"]==0.25 and ngram["n"]==0.25 and len(ngram)==4
+	return assertion(claim,
+		"Passed ngram_7",
+		"Failed ngram_7: prob count was " + str(ngram))
+
+def test_ngram_8():
+	s1 = "john"
+	ngram = ngram_frequency(s1, 2, normed=True)
+	third = 1.0 / 3
+	claim = ngram["jo"]==third and ngram["oh"]==third and ngram["hn"]==third and len(ngram)==3 and sum(ngram.values())==1.0
+	return assertion(claim,
+		"Passed ngram_8",
+		"Failed ngram_8: prob count was " +  str(ngram))
+
 def main():
 	print("=================")
 	print("Running tests....")

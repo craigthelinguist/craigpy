@@ -272,7 +272,7 @@ def ngram_frequency(string, degree, normed=False):
 			dist[s] = 0
 		dist[s] = dist[s] + 1
 	if normed:
-		total = len(string)
+		total = len(string) - degree + 1
 		for key in dist:
 			dist[key] = 1.0 * dist[key] / total
 	return dist
@@ -341,5 +341,6 @@ def kullback_leibler(dist1, dist2, ngram_degree, alphabet):
 	for ngram in alphabet:
 		f1 = dist1[ngram]
 		f2 = dist2[ngram]
-		divergence = divergence + f1 * __math__.log(1.0 * f1 / f2)
+		if f1 != 0 and f2 != 0:
+			divergence = divergence + f1 * __math__.log(1.0 * f1 / f2)
 	return divergence

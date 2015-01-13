@@ -134,7 +134,3 @@ class Trie:
     		if result:
     			return True
     	return False
-
-t = Trie(["can","cat","cool","coal","coals"])
-for word in t:
-	print(word)

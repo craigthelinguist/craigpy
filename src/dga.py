@@ -141,6 +141,8 @@ def KL_distance(test_domains, good_domains, botnet_domains, degree, alphabet="al
 				main_dist[key] = main_dist[key] + 1
 		for key in main_dist:
 			main_dist[key] = 1.0 * main_dist[key] / len(words)
+
+	# get distributions for each collection
 	dist_good = get_dist(good_domains)
 	dist_botnet = get_dist(botnet_domains)
 	dist_test = get_dist(test_domains)
