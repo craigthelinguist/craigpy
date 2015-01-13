@@ -150,7 +150,7 @@ def KL_distance(test_domains, good_domains, botnet_domains, degree, alphabet="al
 
 	# a symmetric measure of distance
 	def symmetric_divergence(d1, d2):
-		return 0.5 * (ling.kullback_leibler(d1,d2) + ling.kullback_leibler(d2,d1))
+		return 0.5 * (ling.kullback_leibler(d1,d2,degree,alphabet) + ling.kullback_leibler(d2,d1,degree,alphabet))
 
 	# compare distance between test distribution and the good/bad distributions
 	d_qg = symmetric_divergence(dist_test, dist_good)
