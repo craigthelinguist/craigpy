@@ -86,8 +86,6 @@ def strip_hld(domain):
 		stripped = stripped[:-1]
 	return ".".join(stripped)
 
-print(strip_hld("nz."))
-
 def KL_distance(test_domains, good_domains, botnet_domains, degree, alphabet="alphanumeric"):
 	'''
 	Perform the symmetric Kullback-Leibler divergence test on the given test domains.
