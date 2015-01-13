@@ -74,8 +74,12 @@ def strip_hld(domain):
 			a domain name in the .nz namespace
 	'''
 	stripped = domain.split(".")
+	if len(stripped) == 0:
+		return ""
 	if stripped[-1] == "": # get rid of root
 		stripped = stripped[:-1]
+	if len(stripped) < 2:
+		return ""
 	if stripped[-1] == "nz": # first-level domain
 		stripped = stripped[:-1]
 	if stripped[-1] in __slds__: # second-level domain
