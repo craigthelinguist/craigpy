@@ -3,7 +3,7 @@ import ling
 
 __slds__ = ["ac", "co", "geek", "gen", "kiwi", "maori", "net", "org", "school", "cri", "govt", "health", "iwi", "mil", "parliament"]
 
-def get_tld(domain, FQDN=True):
+def get_tld(domain):
 	'''
 	Given a domain name, return the top-level part.
 
@@ -11,26 +11,40 @@ def get_tld(domain, FQDN=True):
 	----------
 		domain : str
 			domain-name to get the tld of.
-		FQDN : bool
-			is the domain name fully qualified? i.e.: does it end with "."
 	'''
 	domain = domain.split(".")
-	return domain[-2] if FQDN else domain[-1]
+	return domain[-2] if domain[-1] == "" else domain[-1]
 
-def get_sld(domain, FQDN=True):
+def get_sld(domain):
 	'''
 	Given a domain name, return the second-level part.
-
 
 	Parameters
 	----------
 		domain : str
 			domain-name to get the sld of.
-		FQDN : bool
-			is the domain name fully qualified? i.e.: does it end with "."
 	'''
 	domain = domain.split(".")
-	return domain[-3] if FQDN else domain[-2]
+	if domain[-1] == "":
+		domain = domain[:-1]
+	if domain[-1] != "nz":
+		return ""
+	if domain[-2] not in __slds__:
+		return ""
+	else:
+		return domain[-2]
+
+def get_lld(domain):
+	'''
+	Given a domain name, return the lowest-level part.
+	E.g.: "hello.world.org.nz. --> "hello"
+	
+	Parameters
+	----------
+		domain : str
+			domain whose lowest-level domain name you want
+	'''
+	return domain.split(".")[0]
 
 def get_country(countrycode, official_name=False):
 	'''
@@ -68,7 +82,7 @@ def strip_hld(domain):
 		stripped = stripped[:-1]
 	return ".".join(stripped)
 
-def KL_divergence(test_domains, good_domains, botnet_domains, degree, alphabet="alphanumeric"):
+def KL_distance(test_domains, good_domains, botnet_domains, degree, alphabet="alphanumeric"):
 	'''
 	Perform the symmetric Kullback-Leibler divergence test on the given test domains.
 
