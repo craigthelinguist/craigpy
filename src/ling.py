@@ -1,6 +1,6 @@
-
-import decimal
+from decimal import Decimal
 import math as __math__
+from collections import Iterable
 
 def levenshtein(string1, string2, case_sensitive=False,
 				insertion=1, deletion=1, skip=0, transform=1):
@@ -262,7 +262,36 @@ def ngram_frequency(string, degree, normed=False):
 
 	if degree < 1:
 		raise TypeError("Degree of n-gram frequency must be 1 or greater")
-	elif degree > len(string):
+
+	if isinstance(string, str):
+		return __ngram_freq_one__(string, degree, normed)
+	elif isinstance(string, Iterable):
+		strings = string
+		dist = {}
+		ngram_count = 0
+
+		# freq count of all words
+		for word in strings:
+			num_ngrams = len(word) - degree + 1
+			ngram_count = ngram_count + num_ngrams
+			for i in range(num_ngrams):
+				s = ""
+				for j in range(i, i + degree):
+					s = s + word[j]
+				if s not in dist:
+					dist[s] = 1
+				else:
+					dist[s] = dist[s] + 1
+
+		if not normed:
+			return dist
+		else:
+			return { key : Decimal(dist[key]) / Decimal(ngram_count) for key in dist }
+	else:
+		raise TypeError("Must pass string or iterable to n-gram count")
+
+def __ngram_freq_one__(string, degree, normed):
+	if degree > len(string):
 		return {}
 	dist = {}
 	for i in range(len(string) - degree + 1):
@@ -275,7 +304,7 @@ def ngram_frequency(string, degree, normed=False):
 	if normed:
 		total = len(string) - degree + 1
 		for key in dist:
-			dist[key] = 1.0 * dist[key] / total
+			dist[key] = Decimal(dist[key]) / Decimal(total)
 	return dist
 
 def ngram_set(string, degree):

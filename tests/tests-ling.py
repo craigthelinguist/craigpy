@@ -6,6 +6,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.normpath(os.path.join(here, "../src")))
 
 from ling import *
+from decimal import Decimal
 
 def assertion(assertion, correct_msg, failure_msg):
 	if assertion:
@@ -135,7 +136,7 @@ def test_jaccard_6():
 		"Passed jaccard_5",
 		"Failed jaccard_5: got " + str(index) + " but should have been " + str(correct_ans))
 
-def test_ngram_1():
+def test_ngram_01():
 	s1 = "hello"
 	ngram = ngram_frequency(s1, 1)
 	claim = ngram["h"] == 1 and ngram["e"] == 1 and ngram["l"] == 2 and ngram["o"] == 1
@@ -143,7 +144,7 @@ def test_ngram_1():
 		"Passed ngram_1",
 		"Failed ngram_1: frequency count of 1-grams was wrong")
 
-def test_ngram_2():
+def test_ngram_02():
 	s1 = "hellenes"
 	ngram = ngram_frequency(s1, 2)
 	claim = ngram["he"] == 1 and ngram["el"] == 1 and ngram["ll"] == 1 and ngram["le"] == 1 and ngram["en"] == 1 and ngram["ne"] == 1 and ngram["es"] == 1
@@ -151,7 +152,7 @@ def test_ngram_2():
 		"Passed ngram_2",
 		"Failed ngram_2: frequency count of 2-grams was wrong")
 
-def test_ngram_3():
+def test_ngram_03():
 	s1 = "billy"
 	ngram = ngram_set(s1, 1)
 	claim = "b" in ngram and "i" in ngram and "l" in ngram and "y" in ngram and len(ngram) == 4
@@ -159,7 +160,7 @@ def test_ngram_3():
 		"Passed ngram_3",
 		"Failed ngram_3: returned set was wrong")
 
-def test_ngram_4():
+def test_ngram_04():
 	s1 = "clarissa"
 	ngram = ngram_set(s1, 2)
 	claim = "cl" in ngram and "la" in ngram and "ar" in ngram and "ri" in ngram and "is" in ngram and "ss" in ngram and "sa" in ngram and len(ngram) == 7
@@ -167,7 +168,7 @@ def test_ngram_4():
 		"Passed ngram_4",
 		"Failed ngram_4: frequency count of 2-grams was wrong")
 
-def test_ngram_5():
+def test_ngram_05():
 	s1 = "johnny"
 	ngram = ngram_frequency(s1, 1)
 	claim = ngram["j"] == 1 and ngram["o"] == 1 and ngram["h"] == 1 and ngram["n"] == 2 and ngram["y"] == 1 and len(ngram) == 5
@@ -175,7 +176,7 @@ def test_ngram_5():
 		"Passed ngram_5",
 		"Failed ngram_5: frequency count was" + str(ngram))
 
-def test_ngram_6():
+def test_ngram_06():
 	s1 = "johnny"
 	ngram = ngram_frequency(s1, 2)
 	claim = ngram["jo"]==1 and ngram["oh"]==1 and ngram["hn"]==1 and ngram["nn"]==1 and ngram["ny"]==1 and len(ngram)==5
@@ -183,7 +184,7 @@ def test_ngram_6():
 		"Passed ngram_6",
 		"Failed ngram_6: frequency count was " + str(ngram))
 
-def test_ngram_7():
+def test_ngram_07():
 	s1 = "john"
 	ngram = ngram_frequency(s1, 1, normed=True)
 	claim = ngram["j"]==0.25 and ngram["o"]==0.25 and ngram["h"]==0.25 and ngram["n"]==0.25 and len(ngram)==4
@@ -191,14 +192,32 @@ def test_ngram_7():
 		"Passed ngram_7",
 		"Failed ngram_7: prob count was " + str(ngram))
 
-def test_ngram_8():
+def test_ngram_08():
 	s1 = "john"
 	ngram = ngram_frequency(s1, 2, normed=True)
-	third = 1.0 / 3
-	claim = ngram["jo"]==third and ngram["oh"]==third and ngram["hn"]==third and len(ngram)==3 and sum(ngram.values())==1.0
+	third = Decimal(1.0) / Decimal(3)
+	claim = ngram["jo"]==third and ngram["oh"]==third and ngram["hn"]==third and len(ngram)==3 and sum(ngram.values())==third*3
 	return assertion(claim,
 		"Passed ngram_8",
 		"Failed ngram_8: prob count was " +  str(ngram))
+
+def test_ngram_09():
+	words = ["johnny", "halal", "abdul", "aziz", "ansari", "muhammad", "assyria", "chaldean", "armenian", "van", "elias", "judah", "judea", "zion", "gonder", "ethiopia", "solomon", "chechen", "brezhnev"]
+	ngram = ngram_frequency(words, 2, normed=True)
+	claim = sum(ngram.values()) == 1.0
+	return assertion(claim,
+		"Passed ngram_9",
+		"Failed ngram_9: sum of prob counts was " + str(sum(ngram.values())) + " instead of 1.0")
+
+def test_ngram_10():
+	words = ["andy", "warhol"]
+	ngram = ngram_frequency(words, 2, normed=True)
+	eighth = Decimal(1) / Decimal(8)
+	claim = ngram["an"]==eighth and ngram["nd"]==eighth and ngram["dy"]==eighth and ngram["wa"]==eighth and ngram["ar"]==eighth and ngram["rh"]==eighth and ngram["ho"]==eighth and ngram["ol"]==eighth and len(ngram)==8 and sum(ngram.values())==eighth*8
+	return assertion(claim,
+		"Passed ngram_10",
+		"Failed ngram_10: for some reason")
+
 
 def main():
 	print("=================")
