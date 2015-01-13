@@ -1,7 +1,7 @@
 import pycountry as __pc__
 import ling
-import itertools
-from functools import reduce
+
+__slds__ = ["ac", "co", "geek", "gen", "kiwi", "maori", "net", "org", "school", "cri", "govt", "health", "iwi", "mil", "parliament"]
 
 def get_tld(domain, FQDN=True):
 	'''
@@ -49,6 +49,24 @@ def get_country(countrycode, official_name=False):
 	'''
 	countrycode = countrycode.upper()
 	return __pc__.countries.get(alpha2=countrycode).name
+
+def strip_hld(domain):
+	'''
+	Given a domain name in the .nz namespace, return that domain-name with the top-level and second-level parts stripped.
+	
+	Parameters
+	----------
+		domain : str
+			a domain name in the .nz namespace
+	'''
+	stripped = domain.split(".")
+	if stripped[-1] == "": # get rid of root
+		stripped = stripped[:-1]
+	if stripped[-1] == "nz": # first-level domain
+		stripped = stripped[:-1]
+	if stripped[-1] in __slds__: # second-level domain
+		stripped = stripped[:-1]
+	return ".".join(stripped)
 
 def KL_divergence(test_domains, good_domains, botnet_domains, degree, alphabet="alphanumeric"):
 	'''
