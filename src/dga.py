@@ -138,7 +138,7 @@ def KL_distance(test_domains, good_domains, botnet_domains, degree, alphabet="al
 			for key in word_dist:
 				if key not in main_dist:
 					main_dist[key] = 0
-				main_dist[key] = main_dist[key] + 1
+				main_dist[key] = main_dist[key] + word_dist[key]
 		for key in main_dist:
 			main_dist[key] = 1.0 * main_dist[key] / len(words)
 
