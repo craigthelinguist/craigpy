@@ -2,6 +2,34 @@ from decimal import Decimal
 import math as __math__
 from collections import Iterable
 
+def get_ngram_alphabet(characters, degree):
+
+	# create unigram alphabet
+	chars = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+			 "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+	nums = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
+	if alphabet == "alpha":
+		alphabet = chars
+	elif alphabet == "numeric":
+		alphabet = nums
+	elif alphabet == "alphanumeric":
+		alphabet = chars + nums
+	elif not isinstance(characters, Iterable):
+		raise ValueError("characters must be Iterable or 'alpha', 'numeric', or 'alphanumeric')
+
+	# get all possible n-grams
+	def product(a, b):
+		results = []
+		for c1 in a:
+			for c2 in b:
+				results.append(c1 + c2)
+		return results
+	ngrams = alphabet
+	for i in range(degree-1):
+		ngrams = product(ngrams, alphabet)
+
+	return ngrams
+
 def levenshtein(string1, string2, case_sensitive=False,
 				insertion=1, deletion=1, skip=0, transform=1):
 	'''

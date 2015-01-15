@@ -86,32 +86,6 @@ def strip_hld(domain):
 		stripped = stripped[:-1]
 	return ".".join(stripped)
 
-def get_alphabet(alphabet="alphanumeric", degree):
-
-	# create alphabet
-	chars = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
-			 "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
-	nums = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
-	if alphabet == "alpha":
-		alphabet = chars
-	elif alphabet == "numeric":
-		alphabet = nums
-	elif alphabet == "alphanumeric":
-		alphabet = chars + nums
-
-	# get all possible n-grams
-	def product(a, b):
-		results = []
-		for c1 in a:
-			for c2 in b:
-				results.append(c1 + c2)
-		return results
-	ngrams = alphabet
-	for i in range(degree-1):
-		ngrams = product(ngrams, alphabet)
-
-	return ngrams
-
 def KL_test(test_distribution, good_distribution, botnet_distribution, degree, alphabet="alphanumeric"):
 	'''
 	Perform the symmetric Kullback-Leibler divergence test on the given test domains.
