@@ -15,7 +15,7 @@ def get_ngram_alphabet(characters, degree):
 	elif alphabet == "alphanumeric":
 		alphabet = chars + nums
 	elif not isinstance(characters, Iterable):
-		raise ValueError("characters must be Iterable or 'alpha', 'numeric', or 'alphanumeric')
+		raise ValueError("characters must be Iterable or 'alpha', 'numeric', or 'alphanumeric'")
 
 	# get all possible n-grams
 	def product(a, b):
