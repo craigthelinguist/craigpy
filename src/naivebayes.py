@@ -12,7 +12,7 @@ class Classifier(object):
 	classes = {}
 	degree = None
 
-	def __init__(self, training, ngram_degree):
+	def __init__(self, training, ngram_degree, alphabet):
 		'''
 		training
 			[(Iterable, str), (Iterable, str)]
@@ -42,7 +42,15 @@ class Classifier(object):
 						self.ngrams[ngram] += 1
 
 		# laplace smooting
-		for ngram in self.ngrams:
+		for ngram in alphabet:
+
+			# for the ngrams
+			if ngram not in self.ngrams:
+				self.ngrams[ngram] = 1
+			else:
+				self.ngrams[ngram] += 1
+
+			# for each class
 			for clazz in self.classes:
 				if ngram not in self.classes[clazz]:
 					self.classes[clazz][ngram] = 1
@@ -55,7 +63,7 @@ class Classifier(object):
 			self.classes[clazz] = __normalise__(self.classes[clazz])
 
 	def prob_ngram(self, ngram):
-		return self.classes[clazz][ngram]
+		return self.ngrams[ngram]
 
 	def prob_class(self, clazz):
 		return len(self.classes) / 1.0
@@ -64,9 +72,16 @@ class Classifier(object):
 		return self.classes[clazz][ngram]
 
 	def classify(self, string):
+
+		# these strings cannot be classified!
+		if (len(string) < self.degree):
+			return None
+
+		# get frequency count for the ngrams in the string
 		freq = __ling__.ngram_frequency(string, self.degree)
 		clazz_probs = { cl : [] for cl in self.classes.keys() }
 
+		# create a vector of probabilites for each ngram for each class
 		for ngram in freq:
 			for clazz in self.classes:
 				prob_c = self.prob_class(clazz)
@@ -75,12 +90,22 @@ class Classifier(object):
 				for i in range(freq[ngram]):
 					clazz_probs[clazz].append(p_i)
 
+		# debugging purposes
+		# outputs the vector of probabilities for each class
+		#for clazz in clazz_probs:
+		#	print(clazz_probs[clazz])
+
+
+		# reduce the probability vectors into a probability for that one class
+		# map each class's probability vector to its aggregated probability
 		for clazz in clazz_probs:
-			print(clazz_probs[clazz])
+			pvector = clazz_probs[clazz]
+			if len(pvector) == 0:
+				pvector = [0]
+			p = reduce(lambda x,y : x*y, pvector)
+			clazz_probs[clazz] = p
 
-		clazz_probs = { clazz : reduce(lambda x,y : x*y, clazz_probs[clazz])
-							for clazz in clazz_probs }
-
+		# return the class with the highest probability
 		best_category = None
 		best_prob = None
 		for clazz in clazz_probs:
@@ -89,3 +114,18 @@ class Classifier(object):
 				best_prob = prob
 				best_category = clazz
 		return best_category
+
+	def test(self, testset):
+		hits = 0
+		misses = 0
+		for pair in testset:
+			string = pair[0]
+			category = pair[1]
+			if self.classify(string) == category:
+				hits += 1
+			else:
+				misses += 1
+		total = hits + misses
+		prob = 1.0 * hits / total * 100
+		prob = round(prob, 2)
+		print("accuracy: " + str(prob) + "% ("+str(hits)+"/"+str(total)+")") 
