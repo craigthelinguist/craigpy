@@ -8,14 +8,17 @@ def get_ngram_alphabet(characters, degree):
 	chars = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
 			 "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 	nums = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
-	if alphabet == "alpha":
+	alphabet = None
+	if characters == "alpha":
 		alphabet = chars
-	elif alphabet == "numeric":
+	elif characters == "numeric":
 		alphabet = nums
-	elif alphabet == "alphanumeric":
+	elif characters == "alphanumeric":
 		alphabet = chars + nums
 	elif not isinstance(characters, Iterable):
 		raise ValueError("characters must be Iterable or 'alpha', 'numeric', or 'alphanumeric'")
+	else:
+		alphabet = characters
 
 	# get all possible n-grams
 	def product(a, b):
