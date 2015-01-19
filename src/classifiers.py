@@ -5,9 +5,9 @@ import numbers as __numbers__
 
 
 class AbstractClassifier():
-'''
-AbstractClassifiers are anything capable of taking a string, or a text of strings, and returning the category that it belongs to.
-'''
+	'''
+	AbstractClassifiers are anything capable of taking a string, or a text of strings, and returning the category that it belongs to.
+	'''
 
 	__categories__ = {}
 
@@ -18,13 +18,13 @@ AbstractClassifiers are anything capable of taking a string, or a text of string
 		raise NotImplementedError()
 
 class AbstractMatcher():
-'''
-AbstractMatchers are anything which are capable of taking a string, or a text of strings, and returning "yes" or "no". They may be used to confirm or deny that strings
-belong to certain categories.
+	'''
+	AbstractMatchers are anything which are capable of taking a string, or a text of strings, and returning "yes" or "no". They may be used to confirm or deny that strings
+	belong to certain categories.
 
-Matchers can also be inverted. When an AbstractMatcher is inverted, if a string ordinarily would return "yes", it will now return "no", so you can get the logical
-complement of any matched sets.
-'''
+	Matchers can also be inverted. When an AbstractMatcher is inverted, if a string ordinarily would return "yes", it will now return "no", so you can get the logical
+	complement of any matched sets.
+	'''
 
 	__inverted__ = False
 
@@ -44,19 +44,19 @@ complement of any matched sets.
 
 
 class CorpusMatcher(AbstractMatcher):
-'''
-CorpusMatcher will match strings based on their likeness to a corpus of words. It does this by counting the frequency that one character will follow another in a
-specified corpus and use this to figure out the probability that any arbitrary string matches the corpus of words. It can also match "true" or "false" depending on
-your specification of a threshold.
+	'''
+	CorpusMatcher will match strings based on their likeness to a corpus of words. It does this by counting the frequency that one character will follow another in a
+	specified corpus and use this to figure out the probability that any arbitrary string matches the corpus of words. It can also match "true" or "false" depending on
+	your specification of a threshold.
 
-Parameters
-----------
-	threshold : float between 0.0 and 1.0
-		how probable a string's inclusion has to be before it is matched. For example, if threshold is 0.6, a string is considered matched if the probability of it
-		being part of the corpus is 60% or greater
-	trainingSet : Iterable
-		a collection of strings. Their character frequencies will be uesd as the basis for CorpusMatcher's probability matching.
-'''
+	Parameters
+	----------
+		threshold : float between 0.0 and 1.0
+			how probable a string's inclusion has to be before it is matched. For example, if threshold is 0.6, a string is considered matched if the probability of it
+			being part of the corpus is 60% or greater
+		trainingSet : Iterable
+			a collection of strings. Their character frequencies will be uesd as the basis for CorpusMatcher's probability matching.
+	'''
 
 	def __init__(self, threshold, trainingSet=[]):
 		if not isinstance(threshold, float) or threshold < 0 or threshold > 1:
@@ -150,19 +150,19 @@ Parameters
 
 
 class CompositeMatcher(AbstractMatcher):
-'''
-CompositeMatcher is a collection of matchers. It will match strings depending on the underlying matchers and a logical connective passed to its constructor.
-It can also match by probability, if the underlying matchers are capable of matching by probability.
+	'''
+	CompositeMatcher is a collection of matchers. It will match strings depending on the underlying matchers and a logical connective passed to its constructor.
+	It can also match by probability, if the underlying matchers are capable of matching by probability.
 
-Parameters
-----------
-	matchers : Iterable
-		a collection of matchers
-	type : "or" or "and"
-		logic for how to match strings.
-		"or" : a string is matched when any of the underlying matchers returns True
-		"and" : a string is matched when all of the underlying matchers return True
-'''
+	Parameters
+	----------
+		matchers : Iterable
+			a collection of matchers
+		type : "or" or "and"
+			logic for how to match strings.
+			"or" : a string is matched when any of the underlying matchers returns True
+			"and" : a string is matched when all of the underlying matchers return True
+	'''
 
 	def __init__(self, matchers, type="or"):
 		if not isinstance(matchers, Iterable):
@@ -187,8 +187,9 @@ Parameters
 		return ans != self.__inverted__
 
 	def match_probability(self, strings):
-		if isinstance(strings, str):
-			return match
+		raise Error("Not implemented")
+		#if isinstance(strings, str):
+		#	return __matchone__(string)
 
 	def match(self, strings):
 		if isinstance(strings, str):
@@ -206,13 +207,13 @@ Parameters
 
 
 class LengthMatcher(AbstractMatcher):
-'''
-LengthMatcher is able to match strings depending on their size. When you have created a LengthMatcher you must set its parameters using either:
-	- LengthMatcher.stdev
-	- LengthMatcher.stdev_from_words
-	- LengthMatcher.range
-LengthMatcher will give "yes" if a string's length falls in the range of acceptable values set using the above methods.
-'''
+	'''
+	LengthMatcher is able to match strings depending on their size. When you have created a LengthMatcher you must set its parameters using either:
+		- LengthMatcher.stdev
+		- LengthMatcher.stdev_from_words
+		- LengthMatcher.range
+	LengthMatcher will give "yes" if a string's length falls in the range of acceptable values set using the above methods.
+	'''
 
 	__minlength__ = None
 	__maxlength__ = None
@@ -306,15 +307,15 @@ LengthMatcher will give "yes" if a string's length falls in the range of accepta
 
 
 class LanguageClassifier(AbstractClassifier):
-'''
-Classifies text or strings as being of a certain language category, based on the matchers you instantiate it with.
+	'''
+	Classifies text or strings as being of a certain language category, based on the matchers you instantiate it with.
 
-Parameters
-----------
-	matchers : {str -> AbstractMatcher}
-		a dict of matchers. The key is the name of the matcher. For example, you might have: {"Maori" : aMaoriMatcher, "English" : anEnglishMatcher}
-		and this LanguageClassifier would be capable of classifying text as either English or Maori, based on the given matchers.
-'''
+	Parameters
+	----------
+		matchers : {str -> AbstractMatcher}
+			a dict of matchers. The key is the name of the matcher. For example, you might have: {"Maori" : aMaoriMatcher, "English" : anEnglishMatcher}
+			and this LanguageClassifier would be capable of classifying text as either English or Maori, based on the given matchers.
+	'''
 
 	__categories__ = {}
 
