@@ -3,6 +3,20 @@ import math as __math__
 from collections import Iterable
 
 def get_ngram_alphabet(characters, degree):
+	'''
+	Given a collection of unigrams and a degree n, returns the set of all n-grams.
+
+	Parameters
+	----------
+	characters : "alpha", "numeric", "alphanumeric", or Iterable
+		a collection of unigrams
+	degree : int >= 1
+		degree of n-grams to compute
+	'''
+
+	# check arguments
+	if degree < 1:
+		raise ValueError("Degree must be >= 1")
 
 	# create unigram alphabet
 	chars = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
@@ -16,7 +30,7 @@ def get_ngram_alphabet(characters, degree):
 	elif characters == "alphanumeric":
 		alphabet = chars + nums
 	elif not isinstance(characters, Iterable):
-		raise ValueError("characters must be Iterable or 'alpha', 'numeric', or 'alphanumeric'")
+		raise TypeError("characters must be Iterable or 'alpha', 'numeric', or 'alphanumeric'")
 	else:
 		alphabet = characters
 
@@ -273,7 +287,7 @@ def alignment(str1, str2, match=1, mismatch=-1, skip=-2, case_sensitive=False, p
 	align2 = align2[::-1]
 	return (align1, align2)
 
-def ngram_frequency(string, degree, normed=False):
+def ngram_frequency(string, degree, normed=False, smoothing=False, alphabet=None):
 	'''
 	Compute the ngram frequency of the given string.
 	Return: dict of str -> int, mapping each n-gram to its count.
@@ -291,18 +305,25 @@ def ngram_frequency(string, degree, normed=False):
 		if false, return a dict of str -> count, if true, return a dict of str -> probability
 	'''
 
+	# error checking
 	if degree < 1:
-		raise TypeError("Degree of n-gram frequency must be 1 or greater")
+		raise ValueError("Degree of n-gram frequency must be 1 or greater")
+	if smoothing and not alphabet:
+		raise TypeError("If you want to smooth you must specify all possible values in the alphabet.")
 
+	# n-gram frequency for one string
 	if isinstance(string, str):
 		word_freq = __ngram_freq_one__(string, degree)
+		if smoothing:
+			word_freq = __smooth__(word_freq, alphabet)
 		if normed:
 			word_freq = __norm__(word_freq)
 		return word_freq
+
+	# n-gram frequency for multiple strings
 	elif isinstance(string, Iterable):
 		strings = string
 		dist = {}
-
 		for word in strings:
 			word_freq = __ngram_freq_one__(word, degree)
 			for key in word_freq:
@@ -310,16 +331,31 @@ def ngram_frequency(string, degree, normed=False):
 					dist[key] = word_freq[key]
 				else:
 					dist[key] += word_freq[key]
-
+		if smoothing:
+			dist = __smooth__(dist, alphabet)
 		if normed:
 			dist = __norm__(dist)
 		return dist
+
+	# invalid
 	else:
 		raise TypeError("Must pass string or iterable to n-gram count")
 
 def __norm__(map):
 	count = sum(map.values())
 	return { key : 1.0 * map[key] / count for key in map }
+
+def __smooth__(map, alphabet):
+	'''
+	Perform Laplace smoothing on the given map (add one to all possible values in the alphabet).
+	'''
+	smoothed = {}
+	for ngram in alphabet:
+		if ngram in map:
+			smoothed[ngram] = map[ngram] + 1
+		else:
+			smoothed[ngram] = 1
+	return smoothed
 
 def __ngram_freq_one__(string, degree):
 	if degree > len(string):
@@ -381,9 +417,10 @@ def jaccard(string1, string2, ngram_degree=2):
 	union = 1.0 * len(dist1.union(dist2))
 	return 1 if union == 0 else intersection / union
 
-def kullback_leibler(dist1, dist2, ngram_degree, alphabet):
+def kullback_leibler(dist1, dist2, alphabet):
 	'''
 	Compute the Kullback-Leibler divergence from dist1 to dist2.
+	This is the number of additional bits required to encode dist1 given an optimal encoding for dist2.
 
 	Parameters
 	----------
@@ -392,6 +429,11 @@ def kullback_leibler(dist1, dist2, ngram_degree, alphabet):
 	alphabet : Iterable
 		all possible values that the observations in the distributions could have taken on.
 		for example, if you're comparing strings by their bigrams, this should be every possble bigram.
+
+	Properties
+	----------
+	- KL(p,q) =/= KL(q,p)
+	- KL(p,q) >= 0
 	'''
 	alphabet = [x.lower() for x in alphabet]
 	divergence = 0
@@ -404,14 +446,41 @@ def kullback_leibler(dist1, dist2, ngram_degree, alphabet):
 			divergence = divergence + f1 * __math__.log(1.0 * f1 / f2)
 	return divergence
 
-def kullback_leibler_distance(dist1, dist2, ngram_degree, alphabet):
+def kullback_leibler_distance(dist1, dist2, alphabet):
 	'''
 	Compute Kullback-Leibler distance from dist1 to dist2.
+	This is the average of the Kullback-Leibler divergence from dist1 to dist2, and dist2 to dist1.
+
+	Parameters
+	----------
+	dist1, dist2 : {str : float}
+		probability distributions for the n-grams of two strings
+	alphabet : Iterable
+		all possible n-grams
+
+	Properties
+	----------
+	- KLD(p,q) = KLD(q,p)
 	'''
-	return 0.5 * (kullback_leibler(dist1, dist2, ngram_degree, alphabet) + kullback_leibler(dist1, dist2, ngram_degree, alphabet))
+	return 0.5 * (kullback_leibler(dist1, dist2, alphabet) + kullback_leibler(dist1, dist2, alphabet))
 
 
 def bhattacharyya(dist1, dist2, alphabet):
+	'''
+	Compute the Bhattacharyya distance between dist1 and dist2.
+
+	Parameters
+	----------
+	dist1, dist2 : {str : float}
+		probability distributions for the n-grams of two strings
+	alphabet : Iterable
+		all possible n-grams
+
+	Properties
+	----------
+	- B(p,q) = B(q,p)
+	- B(p,q) = 0 means either p=q or p and q have no elements in common
+	'''
 	coefficient = 0
 	for ngram in alphabet:
 		d1 = dist1[ngram] if ngram in dist1 else 0
@@ -421,3 +490,14 @@ def bhattacharyya(dist1, dist2, alphabet):
 	if coefficient == 0:
 		return 0
 	return -__math__.log(coefficient)
+
+chars = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
+bigrams = get_ngram_alphabet(chars, 2)
+unigrams = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
+s1 = ngram_frequency("cdcd", 1, True)
+s2 = ngram_frequency("abbb", 1, True)
+print(bhattacharyya(s1,s2,unigrams))
+
+
+
+
