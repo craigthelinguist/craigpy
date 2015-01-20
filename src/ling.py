@@ -398,6 +398,8 @@ def kullback_leibler(dist1, dist2, ngram_degree, alphabet):
 	for ngram in alphabet:
 		f1 = dist1[ngram] if ngram in dist1 else 0
 		f2 = dist2[ngram] if ngram in dist2 else 0
+		if f2 == 0 and f1 != 0:
+			raise ValueError("When computing KL(P,Q), Q_i=0 must imply P_i=0!")
 		if f1 != 0 and f2 != 0:
 			divergence = divergence + f1 * __math__.log(1.0 * f1 / f2)
 	return divergence
@@ -407,3 +409,15 @@ def kullback_leibler_distance(dist1, dist2, ngram_degree, alphabet):
 	Compute Kullback-Leibler distance from dist1 to dist2.
 	'''
 	return 0.5 * (kullback_leibler(dist1, dist2, ngram_degree, alphabet) + kullback_leibler(dist1, dist2, ngram_degree, alphabet))
+
+
+def bhattacharyya(dist1, dist2, alphabet):
+	coefficient = 0
+	for ngram in alphabet:
+		d1 = dist1[ngram] if ngram in dist1 else 0
+		d2 = dist2[ngram] if ngram in dist2 else 0
+		ans = __math__.sqrt(d1*d2)
+		coefficient += ans
+	if coefficient == 0:
+		return 0
+	return -__math__.log(coefficient)
