@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.normpath(os.path.join(here, "../src")))
 
 from ling import *
 from decimal import Decimal
+from functools import reduce
 
 def assertion(assertion, correct_msg, failure_msg):
 	if assertion:
@@ -19,7 +20,7 @@ def assertion(assertion, correct_msg, failure_msg):
 def accurate(test, expected, threshold=0.00001):
 	return abs(test - expected) <= threshold
 
-def test_seq_score_1():
+def test_seq_score_01():
 	s1 = "john"
 	s2 = "ohm"
 	ans = seq_align(s1, s2)
@@ -28,21 +29,21 @@ def test_seq_score_1():
 		"Passed seq_score_1",
 		"Failed seq_score_1: got " + str(ans) + " but should have been " + str(correct_ans))
 
-def test_seq_score_2():
+def test_seq_score_02():
 	s1 = "john"
 	ans = seq_align(s1, s1)
 	return assertion(ans==4,
 		"Passed seq_score_2",
 		"Failed seq_score_2: got " + str(ans) + " but should have been 4")
 
-def test_seq_score_3():
+def test_seq_score_03():
 	s1 = "john"
 	ans = seq_align(s1, s1)
 	return assertion(ans==4,
 		"Passed seq_score_3",
 		"Failed seq_score_3: got " + str(ans) + " but should have been 4")
 
-def test_seq_score_4():
+def test_seq_score_04():
 	s1 = "john"
 	s2=  "John"
 	ans = seq_align(s1, s2, case_sensitive=True)
@@ -50,7 +51,7 @@ def test_seq_score_4():
 		"Passed seq_score_4",
 		"Failed seq_score_4: got " + str(ans) + " but should have been 2")
 
-def test_seq_score_5():
+def test_seq_score_05():
 	s1 = "john"
 	s2 = "ohm"
 	ans = seq_align(s1, s2, match=4, mismatch=-5, skip=-10)
@@ -59,7 +60,7 @@ def test_seq_score_5():
 		"Passed seq_score_5",
 		"Failed seq_score_5: got " + str(ans) + " but should have been " + str(correct_ans))
 
-def test_seq_score_6():
+def test_seq_score_06():
 	s1 = "john"
 	s2 = "JoHn"
 	ans = seq_align(s1, s2, match=2, mismatch=-3, skip=-5, case_sensitive=True)
@@ -68,7 +69,7 @@ def test_seq_score_6():
 		"Passed seq_score_6",
 		"Failed seq_score_6: got "+ str(ans) +" but should have been " + str(correct_ans))
 
-def test_seq_align_1():
+def test_seq_align_01():
 	s1 = "john"
 	s2 = "ohm"
 	align = alignment(s1, s2)
@@ -77,7 +78,7 @@ def test_seq_align_1():
 		"Passed seq_align_1",
 		"Failed seq_align_1: got " + str(align) + " but should have been " + str(correct_ans))
 
-def test_seq_align_2():
+def test_seq_align_02():
 	s1 = "john"
 	s2 = "ohm"
 	align = alignment(s1, s2, pad_character="&")
@@ -86,7 +87,7 @@ def test_seq_align_2():
 		"Passed seq_align_2",
 		"Failed seq_align_1: got " + str(align) + " but should have been " + str(correct_ans))
 
-def test_jaccard_1():
+def test_jaccard_01():
 	s1 = "ab"
 	s2 = "ab"
 	index = jaccard(s1,s2,1)
@@ -95,7 +96,7 @@ def test_jaccard_1():
 		"Passed jaccard_1",
 		"Failed jaccard_1: got " + str(index) + " but should have been " + str(correct_ans))
 
-def test_jaccard_2():
+def test_jaccard_02():
 	s1 = "ab"
 	s2 = "ab"
 	index = jaccard(s1,s2,2)
@@ -104,7 +105,7 @@ def test_jaccard_2():
 		"Passed jaccard_2",
 		"Failed jaccard_2: got " + str(index) + " but should have been " + str(correct_ans))
 
-def test_jaccard_3():
+def test_jaccard_03():
 	s1 = "abcd"
 	s2 = "efgh"
 	index = jaccard(s1,s2,1)
@@ -113,7 +114,7 @@ def test_jaccard_3():
 		"Passed jaccard_3",
 		"Failed jaccard_3: got " + str(index) + " but should have been " + str(correct_ans))
 
-def test_jaccard_4():
+def test_jaccard_04():
 	s1 = "abcd"
 	s2 = "abba"
 	index = jaccard(s1,s2,1)
@@ -122,7 +123,7 @@ def test_jaccard_4():
 		"Passed jaccard_3",
 		"Failed jaccard_3: got " + str(index) + " but should have been " + str(correct_ans))
 
-def test_jaccard_5():
+def test_jaccard_05():
 	s1 = "abcd"
 	s2 = "abba"
 	index = jaccard(s1,s2,2)
@@ -131,7 +132,7 @@ def test_jaccard_5():
 		"Passed jaccard_4",
 		"Failed jaccard_4: got " + str(index) + " but should have been " + str(correct_ans))
 
-def test_jaccard_6():
+def test_jaccard_06():
 	s1 = ""
 	index = jaccard(s1,s1,1)
 	correct_ans = 1.0
@@ -221,6 +222,34 @@ def test_ngram_10():
 		"Passed ngram_10",
 		"Failed ngram_10: for some reason")
 
+def test_smoothing_01():
+	alphabet = get_ngram_alphabet("alpha", 1)
+	s = "john"
+	distribution = ngram_frequency(s, 1, normed=False, smoothing=True, alphabet=alphabet)
+	all_chars_in_dist = reduce(lambda x,y : x and y, [char in distribution for char in alphabet])
+	counts_correct = distribution["j"]==2 and distribution["o"]==2 and distribution["h"]==2 and distribution["n"]==2
+	claim = all_chars_in_dist and counts_correct
+	return assertion(claim,
+		"Passed smoothing_01",
+		"Failed smoothing_01: smoothed? "+str(all_chars_in_dist)+", counts correct? "+str(counts_correct))
+
+def test_smoothing_02():
+	alphabet = get_ngram_alphabet("alpha", 1)
+	s = "john"
+	distribution = ngram_frequency(s, 1, normed=True, smoothing=True, alphabet=alphabet)
+	claim = reduce(lambda x,y : x and y, [distribution[x] > 0 for x in alphabet])
+	return assertion(claim,
+		"Passed smoothing_02",
+		"Failed smoothing_02: some character has a non-positive probability")
+
+def test_smoothing_03():
+	alphabet = get_ngram_alphabet("alpha", 2)
+	s = "johnny"
+	distribution = ngram_frequency(s, 2, normed=True, smoothing=True, alphabet=alphabet)
+	claim = reduce(lambda x,y : x and y, [distribution[x] > 0 for x in alphabet])
+	return assertion(claim,
+		"Passed smoothing_03",
+		"Failed smoothing_03: some character has a non-positive probability")
 
 def main():
 	print("=================")
