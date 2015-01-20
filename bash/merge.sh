@@ -1,5 +1,5 @@
 #!/bin/bash
-rm -rf data*
+rm -r data*
 python query.py
 touch data.tsv
 cat header.txt >> data.tsv
