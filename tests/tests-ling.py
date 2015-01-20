@@ -16,6 +16,9 @@ def assertion(assertion, correct_msg, failure_msg):
 		print(failure_msg)
 		return False
 
+def accurate(test, expected, threshold=0.00001):
+	return abs(test - expected) <= threshold
+
 def test_seq_score_1():
 	s1 = "john"
 	s2 = "ohm"
@@ -195,8 +198,8 @@ def test_ngram_07():
 def test_ngram_08():
 	s1 = "john"
 	ngram = ngram_frequency(s1, 2, normed=True)
-	third = Decimal(1.0) / Decimal(3)
-	claim = ngram["jo"]==third and ngram["oh"]==third and ngram["hn"]==third and len(ngram)==3 and sum(ngram.values())==third*3
+	third = 1.0 / 3
+	claim = accurate(ngram["jo"], third) and accurate(ngram["oh"],third) and accurate(ngram["hn"],third) and len(ngram)==3 and accurate(sum(ngram.values()), 1.0)
 	return assertion(claim,
 		"Passed ngram_8",
 		"Failed ngram_8: prob count was " +  str(ngram))
@@ -204,7 +207,7 @@ def test_ngram_08():
 def test_ngram_09():
 	words = ["johnny", "halal", "abdul", "aziz", "ansari", "muhammad", "assyria", "chaldean", "armenian", "van", "elias", "judah", "judea", "zion", "gonder", "ethiopia", "solomon", "chechen", "brezhnev"]
 	ngram = ngram_frequency(words, 2, normed=True)
-	claim = sum(ngram.values()) == 1.0
+	claim = accurate(sum(ngram.values()), 1.0)
 	return assertion(claim,
 		"Passed ngram_9",
 		"Failed ngram_9: sum of prob counts was " + str(sum(ngram.values())) + " instead of 1.0")
@@ -212,8 +215,8 @@ def test_ngram_09():
 def test_ngram_10():
 	words = ["andy", "warhol"]
 	ngram = ngram_frequency(words, 2, normed=True)
-	eighth = Decimal(1) / Decimal(8)
-	claim = ngram["an"]==eighth and ngram["nd"]==eighth and ngram["dy"]==eighth and ngram["wa"]==eighth and ngram["ar"]==eighth and ngram["rh"]==eighth and ngram["ho"]==eighth and ngram["ol"]==eighth and len(ngram)==8 and sum(ngram.values())==eighth*8
+	eighth = 1.0 / 8
+	claim = accurate(ngram["an"],eighth) and accurate(ngram["nd"],eighth) and accurate(ngram["dy"],eighth) and accurate(ngram["wa"],eighth) and accurate(ngram["ar"],eighth) and accurate(ngram["rh"],eighth) and accurate(ngram["ho"],eighth) and accurate(ngram["ol"],eighth) and len(ngram)==8 and accurate(sum(ngram.values()), 1.0)
 	return assertion(claim,
 		"Passed ngram_10",
 		"Failed ngram_10: for some reason")

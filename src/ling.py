@@ -295,33 +295,33 @@ def ngram_frequency(string, degree, normed=False):
 		raise TypeError("Degree of n-gram frequency must be 1 or greater")
 
 	if isinstance(string, str):
-		return __ngram_freq_one__(string, degree, normed)
+		word_freq = __ngram_freq_one__(string, degree)
+		if normed:
+			word_freq = __norm__(word_freq)
+		return word_freq
 	elif isinstance(string, Iterable):
 		strings = string
 		dist = {}
-		ngram_count = 0
 
-		# freq count of all words
 		for word in strings:
-			num_ngrams = len(word) - degree + 1
-			ngram_count = ngram_count + num_ngrams
-			for i in range(num_ngrams):
-				s = ""
-				for j in range(i, i + degree):
-					s = s + word[j]
-				if s not in dist:
-					dist[s] = 1
+			word_freq = __ngram_freq_one__(word, degree)
+			for key in word_freq:
+				if key not in dist:
+					dist[key] = word_freq[key]
 				else:
-					dist[s] = dist[s] + 1
+					dist[key] += word_freq[key]
 
-		if not normed:
-			return dist
-		else:
-			return { key : Decimal(dist[key]) / Decimal(ngram_count) for key in dist }
+		if normed:
+			dist = __norm__(dist)
+		return dist
 	else:
 		raise TypeError("Must pass string or iterable to n-gram count")
 
-def __ngram_freq_one__(string, degree, normed):
+def __norm__(map):
+	count = sum(map.values())
+	return { key : 1.0 * map[key] / count for key in map }
+
+def __ngram_freq_one__(string, degree):
 	if degree > len(string):
 		return {}
 	dist = {}
@@ -332,10 +332,6 @@ def __ngram_freq_one__(string, degree, normed):
 		if s not in dist:
 			dist[s] = 0
 		dist[s] = dist[s] + 1
-	if normed:
-		total = len(string) - degree + 1
-		for key in dist:
-			dist[key] = Decimal(dist[key]) / Decimal(total)
 	return dist
 
 def ngram_set(string, degree):
