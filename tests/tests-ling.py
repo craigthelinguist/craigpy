@@ -251,6 +251,41 @@ def test_smoothing_03():
 		"Passed smoothing_03",
 		"Failed smoothing_03: some character has a non-positive probability")
 
+def test_bhattacharyya_01():
+	alphabet = ["h","e","l","l","o","i","n"]
+	d1 = ngram_frequency("hello", 1, normed=True)
+	d2 = ngram_frequency("hellion", 1, normed=True)
+	claim = bhattacharyya(d1,d2,alphabet) == bhattacharyya(d2,d1,alphabet)
+	return assertion(claim,
+		"Passed bhattacharyya_01",
+		"Failed bhattacharyya_01: d(p,q) should be equal to d(q,p)")
+
+def test_bhattacharyya_02():
+	alphabet = ["h","e","l","o"]
+	d1 = ngram_frequency("hello", 1, normed=True)
+	distance = bhattacharyya(d1,d1,alphabet)
+	claim = distance == 0
+	return assertion(claim,
+		"Passed bhattacharyya_02",
+		"Failed bhattacharyya_02: d(p,p) should be equal to 0 but it was "+str(distance))
+
+def test_bhattacharyya_03():
+	alphabet = [""]
+	d1 = ngram_frequency("", 1, normed=True)
+	claim = bhattacharyya(d1,d1,alphabet) == 0
+	return assertion(claim,
+		"Passed bhattacharyya_03",
+		"Failed bhattacharyya_03: distance between empty prob distributions is zero")
+
+def test_bhattacharyya_04():
+	alphabet = set([char for char in "wellington"] + [char for char in "hamilton"])
+	d1 = ngram_frequency("wellington", 1, normed=True)
+	d2 = ngram_frequency("hamilton", 1, normed=True)
+	bd = bhattacharyya(d1,d2,alphabet)
+	return assertion(accurate(bd, 0.42826, 0.0001),
+		"Passed bhattacharyya_04",
+		"Failed bhattacharyya_04: distance should be 0.42826266... but it was " + str(bd))
+
 def main():
 	print("=================")
 	print("Running tests....")

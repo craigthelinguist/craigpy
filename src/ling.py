@@ -480,24 +480,16 @@ def bhattacharyya(dist1, dist2, alphabet):
 	----------
 	- B(p,q) = B(q,p)
 	- B(p,q) = 0 means either p=q or p and q have no elements in common
+
+	Traps
+	-----
+	- The alphabet passed in must not contain duplicates.
 	'''
 	coefficient = 0
 	for ngram in alphabet:
 		d1 = dist1[ngram] if ngram in dist1 else 0
 		d2 = dist2[ngram] if ngram in dist2 else 0
-		ans = __math__.sqrt(d1*d2)
-		coefficient += ans
+		coefficient += __math__.sqrt(d1*d2)
 	if coefficient == 0:
 		return 0
 	return -__math__.log(coefficient)
-
-chars = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
-bigrams = get_ngram_alphabet(chars, 2)
-unigrams = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
-s1 = ngram_frequency("cdcd", 1, True)
-s2 = ngram_frequency("abbb", 1, True)
-print(bhattacharyya(s1,s2,unigrams))
-
-
-
-
