@@ -2,7 +2,10 @@ import pycountry as __pc__
 import ling
 import socket
 
-__slds__ = ["ac", "co", "geek", "gen", "kiwi", "maori", "net", "org", "school", "cri", "govt", "health", "iwi", "mil", "parliament"]
+__slds__ = ["ac", "co", "geek", "gen", "kiwi", "maori", "net", "org", "school", "cri", "govt", "gov", "health", "iwi", "mil", "parliament"]
+__ccs__ = [country.alpha2.lower() for country in __pc__.countries] + [country.alpha2.lower() for country in __pc__.historic_countries]
+__tlds__ = ["com", "net", "org", "int", "edu", "gov", "mil", "arpa", "biz"] + __ccs__
+
 
 def get_tld(domain):
 	'''
@@ -26,7 +29,7 @@ def get_sld(domain):
 			domain-name to get the sld of.
 	'''
 	domain = domain.split(".")
-	if domain[-1] == "":
+	if domain[-1] == "": # get rid of root
 		domain = domain[:-1]
 	if domain[-1] != "nz":
 		return ""
@@ -81,7 +84,7 @@ def strip_hld(domain):
 		stripped = stripped[:-1]
 	if len(stripped) < 2:
 		return ""
-	if stripped[-1] == "nz": # first-level domain
+	if stripped[-1] in __tlds__: # first-level domain
 		stripped = stripped[:-1]
 	if stripped[-1] in __slds__: # second-level domain
 		stripped = stripped[:-1]
@@ -111,4 +114,4 @@ def ip_from_domain(domain):
 	try:
 		return socket.gethostbyname(domain)
 	except socket.gaierror:
-		return Nonex
+		return None
