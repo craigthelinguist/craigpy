@@ -6,7 +6,6 @@ __slds__ = ["ac", "co", "geek", "gen", "kiwi", "maori", "net", "org", "school", 
 __ccs__ = [country.alpha2.lower() for country in __pc__.countries] + [country.alpha2.lower() for country in __pc__.historic_countries]
 __tlds__ = ["com", "net", "org", "int", "edu", "gov", "mil", "arpa", "biz"] + __ccs__
 
-
 def get_tld(domain):
 	'''
 	Given a domain name, return the top-level part.
@@ -50,7 +49,7 @@ def get_lld(domain):
 	'''
 	return domain.split(".")[0]
 
-def get_countrycode(countrycode, official_name=False):
+def country_from_cc(countrycode, official_name=False):
 	'''
 	Given a country code, return the corresponding country.
 
@@ -67,6 +66,7 @@ def get_countrycode(countrycode, official_name=False):
 	'''
 	countrycode = countrycode.upper()
 	return __pc__.countries.get(alpha2=countrycode).name
+}
 
 def strip_hld(domain):
 	'''
@@ -136,4 +136,4 @@ def is_valid(domain):
 		if char not in __validchars__:
 			return False
 
-	return True
+	return Trued
