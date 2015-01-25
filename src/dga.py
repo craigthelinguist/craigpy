@@ -115,3 +115,25 @@ def ip_from_domain(domain):
 		return socket.gethostbyname(domain)
 	except socket.gaierror:
 		return None
+
+
+def is_valid(domain):
+	'''
+	Return true if the domain has a valid name.
+	'''
+	domain = strip_hld(domain.lower()).split(".")[-1]
+
+	# check for improper length
+	if len(word) < 2:
+		return False
+
+	# cannot begin or end with a hyphen
+	if word[0] == "-" or word[-1] == "-":
+		return False
+
+	# check for illegal characters
+	for char in word:
+		if char not in __validchars__:
+			return False
+
+	return True
