@@ -66,7 +66,6 @@ def country_from_cc(countrycode, official_name=False):
 	'''
 	countrycode = countrycode.upper()
 	return __pc__.countries.get(alpha2=countrycode).name
-}
 
 def strip_hld(domain):
 	'''
