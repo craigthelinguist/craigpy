@@ -4,7 +4,7 @@ import socket
 
 __slds__ = ["ac", "co", "geek", "gen", "kiwi", "maori", "net", "org", "school", "cri", "govt", "gov", "health", "iwi", "mil", "parliament"]
 __ccs__ = [country.alpha2.lower() for country in __pc__.countries] + [country.alpha2.lower() for country in __pc__.historic_countries]
-__tlds__ = ["com", "net", "org", "int", "edu", "gov", "mil", "arpa", "biz"] + __ccs__
+__tlds__ = ["com", "net", "org", "int", "edu", "gov", "mil", "arpa", "biz", "info"] + __ccs__
 
 def get_tld(domain):
 	'''
